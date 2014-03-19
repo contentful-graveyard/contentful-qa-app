@@ -1,0 +1,1 @@
+PODS_Q_A_CONTENTFULDELIVERYAPI_OTHER_LDFLAGS = -framework MapKit -framework UIKit

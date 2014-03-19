@@ -1,0 +1,41 @@
+PODS:
+  - AFNetworking (2.2.1):
+    - AFNetworking/NSURLConnection
+    - AFNetworking/NSURLSession
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+    - AFNetworking/UIKit
+  - AFNetworking/NSURLConnection (2.2.1):
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+  - AFNetworking/NSURLSession (2.2.1):
+    - AFNetworking/NSURLConnection
+  - AFNetworking/Reachability (2.2.1)
+  - AFNetworking/Security (2.2.1)
+  - AFNetworking/Serialization (2.2.1)
+  - AFNetworking/UIKit (2.2.1):
+    - AFNetworking/NSURLConnection
+    - AFNetworking/NSURLSession
+  - Bypass (1.0.1)
+  - ContentfulDeliveryAPI (0.1.0):
+    - AFNetworking
+    - ISO8601DateFormatter
+  - ISO8601DateFormatter (0.7)
+
+DEPENDENCIES:
+  - Bypass
+  - ContentfulDeliveryAPI (from `https://github.com/contentful/contentful.objc.git`)
+
+EXTERNAL SOURCES:
+  ContentfulDeliveryAPI:
+    :git: https://github.com/contentful/contentful.objc.git
+
+SPEC CHECKSUMS:
+  AFNetworking: 0121f4b69be3fa58d1ab317866e036e12ac9651d
+  Bypass: 05609ba2727ae711aa82256e7600b7ac7a174927
+  ContentfulDeliveryAPI: 02e21648138ea540e483c5d5973adc780905e373
+  ISO8601DateFormatter: 00944e437ea647f4244454ce8809d313861d08de
+
+COCOAPODS: 0.29.0

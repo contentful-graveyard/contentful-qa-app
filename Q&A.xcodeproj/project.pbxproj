@@ -1,0 +1,380 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		260B1B2E25714E00BC9A877D /* libPods-Q&A.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F4E8C339F334ADAA0C40419 /* libPods-Q&A.a */; };
+		A173F5AB18D9E027000E6F92 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A173F5AA18D9E027000E6F92 /* Foundation.framework */; };
+		A173F5AD18D9E027000E6F92 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A173F5AC18D9E027000E6F92 /* CoreGraphics.framework */; };
+		A173F5AF18D9E027000E6F92 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A173F5AE18D9E027000E6F92 /* UIKit.framework */; };
+		A173F5B718D9E027000E6F92 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5B618D9E027000E6F92 /* main.m */; };
+		A173F5BB18D9E027000E6F92 /* QAAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5BA18D9E027000E6F92 /* QAAppDelegate.m */; };
+		A173F5BD18D9E027000E6F92 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A173F5BC18D9E027000E6F92 /* Images.xcassets */; };
+		A173F5EA18D9E23D000E6F92 /* CDASpaceSelectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5E718D9E23D000E6F92 /* CDASpaceSelectionViewController.m */; };
+		A173F5EB18D9E23D000E6F92 /* CDATextEntryCell.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5E918D9E23D000E6F92 /* CDATextEntryCell.m */; };
+		A173F5EE18D9E2FA000E6F92 /* UIApplication+QA.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5ED18D9E2FA000E6F92 /* UIApplication+QA.m */; };
+		A173F5F118D9E3ED000E6F92 /* QAInlineFieldsViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A173F5F018D9E3ED000E6F92 /* QAInlineFieldsViewController.mm */; };
+		A173F5F318D9E8E6000E6F92 /* SpaceSelection.jpg in Resources */ = {isa = PBXBuildFile; fileRef = A173F5F218D9E8E6000E6F92 /* SpaceSelection.jpg */; };
+		A173F5F618D9E9C7000E6F92 /* QAQuestionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5F518D9E9C7000E6F92 /* QAQuestionViewController.m */; };
+		A173F5F918D9ED76000E6F92 /* QAEntriesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5F818D9ED76000E6F92 /* QAEntriesViewController.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0F4E8C339F334ADAA0C40419 /* libPods-Q&A.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Q&A.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3671E794DEAC4655A57A1514 /* Pods-Q&A.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Q&A.xcconfig"; path = "Pods/Pods-Q&A.xcconfig"; sourceTree = "<group>"; };
+		A173F5A718D9E027000E6F92 /* Q&A.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Q&A.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A173F5AA18D9E027000E6F92 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		A173F5AC18D9E027000E6F92 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		A173F5AE18D9E027000E6F92 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		A173F5B218D9E027000E6F92 /* Q&A-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Q&A-Info.plist"; sourceTree = "<group>"; };
+		A173F5B618D9E027000E6F92 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		A173F5B818D9E027000E6F92 /* Q&A-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Q&A-Prefix.pch"; sourceTree = "<group>"; };
+		A173F5B918D9E027000E6F92 /* QAAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QAAppDelegate.h; sourceTree = "<group>"; };
+		A173F5BA18D9E027000E6F92 /* QAAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QAAppDelegate.m; sourceTree = "<group>"; };
+		A173F5BC18D9E027000E6F92 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		A173F5C318D9E027000E6F92 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		A173F5E618D9E23D000E6F92 /* CDASpaceSelectionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDASpaceSelectionViewController.h; sourceTree = "<group>"; };
+		A173F5E718D9E23D000E6F92 /* CDASpaceSelectionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDASpaceSelectionViewController.m; sourceTree = "<group>"; };
+		A173F5E818D9E23D000E6F92 /* CDATextEntryCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDATextEntryCell.h; sourceTree = "<group>"; };
+		A173F5E918D9E23D000E6F92 /* CDATextEntryCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDATextEntryCell.m; sourceTree = "<group>"; };
+		A173F5EC18D9E2FA000E6F92 /* UIApplication+QA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIApplication+QA.h"; sourceTree = "<group>"; };
+		A173F5ED18D9E2FA000E6F92 /* UIApplication+QA.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIApplication+QA.m"; sourceTree = "<group>"; };
+		A173F5EF18D9E3ED000E6F92 /* QAInlineFieldsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QAInlineFieldsViewController.h; sourceTree = "<group>"; };
+		A173F5F018D9E3ED000E6F92 /* QAInlineFieldsViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = QAInlineFieldsViewController.mm; sourceTree = "<group>"; };
+		A173F5F218D9E8E6000E6F92 /* SpaceSelection.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = SpaceSelection.jpg; sourceTree = "<group>"; };
+		A173F5F418D9E9C7000E6F92 /* QAQuestionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QAQuestionViewController.h; sourceTree = "<group>"; };
+		A173F5F518D9E9C7000E6F92 /* QAQuestionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QAQuestionViewController.m; sourceTree = "<group>"; };
+		A173F5F718D9ED76000E6F92 /* QAEntriesViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QAEntriesViewController.h; sourceTree = "<group>"; };
+		A173F5F818D9ED76000E6F92 /* QAEntriesViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QAEntriesViewController.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A173F5A418D9E027000E6F92 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A173F5AD18D9E027000E6F92 /* CoreGraphics.framework in Frameworks */,
+				A173F5AF18D9E027000E6F92 /* UIKit.framework in Frameworks */,
+				A173F5AB18D9E027000E6F92 /* Foundation.framework in Frameworks */,
+				260B1B2E25714E00BC9A877D /* libPods-Q&A.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A173F59E18D9E027000E6F92 = {
+			isa = PBXGroup;
+			children = (
+				A173F5B018D9E027000E6F92 /* Code */,
+				A173F5A918D9E027000E6F92 /* Frameworks */,
+				A173F5A818D9E027000E6F92 /* Products */,
+				A173F5D918D9E042000E6F92 /* Resources */,
+				A173F5B118D9E027000E6F92 /* Supporting Files */,
+				3671E794DEAC4655A57A1514 /* Pods-Q&A.xcconfig */,
+			);
+			sourceTree = "<group>";
+		};
+		A173F5A818D9E027000E6F92 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A173F5A718D9E027000E6F92 /* Q&A.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A173F5A918D9E027000E6F92 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A173F5AA18D9E027000E6F92 /* Foundation.framework */,
+				A173F5AC18D9E027000E6F92 /* CoreGraphics.framework */,
+				A173F5AE18D9E027000E6F92 /* UIKit.framework */,
+				A173F5C318D9E027000E6F92 /* XCTest.framework */,
+				0F4E8C339F334ADAA0C40419 /* libPods-Q&A.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A173F5B018D9E027000E6F92 /* Code */ = {
+			isa = PBXGroup;
+			children = (
+				A173F5E618D9E23D000E6F92 /* CDASpaceSelectionViewController.h */,
+				A173F5E718D9E23D000E6F92 /* CDASpaceSelectionViewController.m */,
+				A173F5E818D9E23D000E6F92 /* CDATextEntryCell.h */,
+				A173F5E918D9E23D000E6F92 /* CDATextEntryCell.m */,
+				A173F5B918D9E027000E6F92 /* QAAppDelegate.h */,
+				A173F5BA18D9E027000E6F92 /* QAAppDelegate.m */,
+				A173F5F718D9ED76000E6F92 /* QAEntriesViewController.h */,
+				A173F5F818D9ED76000E6F92 /* QAEntriesViewController.m */,
+				A173F5EF18D9E3ED000E6F92 /* QAInlineFieldsViewController.h */,
+				A173F5F018D9E3ED000E6F92 /* QAInlineFieldsViewController.mm */,
+				A173F5F418D9E9C7000E6F92 /* QAQuestionViewController.h */,
+				A173F5F518D9E9C7000E6F92 /* QAQuestionViewController.m */,
+				A173F5EC18D9E2FA000E6F92 /* UIApplication+QA.h */,
+				A173F5ED18D9E2FA000E6F92 /* UIApplication+QA.m */,
+			);
+			path = Code;
+			sourceTree = "<group>";
+		};
+		A173F5B118D9E027000E6F92 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				A173F5B618D9E027000E6F92 /* main.m */,
+				A173F5B218D9E027000E6F92 /* Q&A-Info.plist */,
+				A173F5B818D9E027000E6F92 /* Q&A-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			path = Supporting_Files;
+			sourceTree = "<group>";
+		};
+		A173F5D918D9E042000E6F92 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A173F5F218D9E8E6000E6F92 /* SpaceSelection.jpg */,
+				A173F5BC18D9E027000E6F92 /* Images.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A173F5A618D9E027000E6F92 /* Q&A */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A173F5D318D9E027000E6F92 /* Build configuration list for PBXNativeTarget "Q&A" */;
+			buildPhases = (
+				B432784EE38C489D824D0513 /* Check Pods Manifest.lock */,
+				A173F5A318D9E027000E6F92 /* Sources */,
+				A173F5A418D9E027000E6F92 /* Frameworks */,
+				A173F5A518D9E027000E6F92 /* Resources */,
+				AE17644651294382962409AA /* Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Q&A";
+			productName = "Q&A";
+			productReference = A173F5A718D9E027000E6F92 /* Q&A.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A173F59F18D9E027000E6F92 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = QA;
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = "Boris Bügling";
+			};
+			buildConfigurationList = A173F5A218D9E027000E6F92 /* Build configuration list for PBXProject "Q&A" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = A173F59E18D9E027000E6F92;
+			productRefGroup = A173F5A818D9E027000E6F92 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A173F5A618D9E027000E6F92 /* Q&A */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A173F5A518D9E027000E6F92 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A173F5F318D9E8E6000E6F92 /* SpaceSelection.jpg in Resources */,
+				A173F5BD18D9E027000E6F92 /* Images.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		AE17644651294382962409AA /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Pods-Q&A-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B432784EE38C489D824D0513 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A173F5A318D9E027000E6F92 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A173F5EB18D9E23D000E6F92 /* CDATextEntryCell.m in Sources */,
+				A173F5EE18D9E2FA000E6F92 /* UIApplication+QA.m in Sources */,
+				A173F5F118D9E3ED000E6F92 /* QAInlineFieldsViewController.mm in Sources */,
+				A173F5EA18D9E23D000E6F92 /* CDASpaceSelectionViewController.m in Sources */,
+				A173F5BB18D9E027000E6F92 /* QAAppDelegate.m in Sources */,
+				A173F5B718D9E027000E6F92 /* main.m in Sources */,
+				A173F5F618D9E9C7000E6F92 /* QAQuestionViewController.m in Sources */,
+				A173F5F918D9ED76000E6F92 /* QAEntriesViewController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A173F5D118D9E027000E6F92 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		A173F5D218D9E027000E6F92 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A173F5D418D9E027000E6F92 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3671E794DEAC4655A57A1514 /* Pods-Q&A.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Supporting_Files/Q&A-Prefix.pch";
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/Supporting_Files/Q&A-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		A173F5D518D9E027000E6F92 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3671E794DEAC4655A57A1514 /* Pods-Q&A.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Supporting_Files/Q&A-Prefix.pch";
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/Supporting_Files/Q&A-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A173F5A218D9E027000E6F92 /* Build configuration list for PBXProject "Q&A" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A173F5D118D9E027000E6F92 /* Debug */,
+				A173F5D218D9E027000E6F92 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A173F5D318D9E027000E6F92 /* Build configuration list for PBXNativeTarget "Q&A" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A173F5D418D9E027000E6F92 /* Debug */,
+				A173F5D518D9E027000E6F92 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A173F59F18D9E027000E6F92 /* Project object */;
+}
