@@ -9,11 +9,14 @@
 #import <Bypass/Bypass.h>
 #import <ContentfulDeliveryAPI/ContentfulDeliveryAPI.h>
 
+#import "NSTextAttachment+Field.h"
 #import "QAInlineFieldsViewController.h"
+#import "QAWebViewController.h"
 
 @interface QAInlineFieldsViewController () <UITextViewDelegate>
 
 @property (nonatomic) CDAEntry* entry;
+@property (nonatomic) UIImage* playButtonImage;
 @property (nonatomic) UITextView* textView;
 
 @end
@@ -62,6 +65,9 @@
     if (self) {
         self.entry = entry;
         self.title = self.entry.fields[self.entry.contentType.displayField];
+        
+        UIImage* playButtonImage = [UIImage imageNamed:@"playbtn"];
+        self.playButtonImage = [[self class] imageWithImage:playButtonImage fitToWidth:200.0];
     }
     return self;
 }
@@ -95,21 +101,28 @@
                 }
                 
                 CDAAsset* asset = value;
-                if (![asset.MIMEType hasPrefix:@"image/"]) {
-                    continue;
+                
+                if ([asset.MIMEType hasPrefix:@"audio/"]) {
+                    NSTextAttachment* attachment = [NSTextAttachment new];
+                    attachment.field = field;
+                    attachment.image = self.playButtonImage;
+                    
+                    NSAttributedString* attachmentString = [NSAttributedString attributedStringWithAttachment:attachment];
+                    [entryContent appendAttributedString:attachmentString];
                 }
                 
-                [entryContent appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
-                
-                NSRange range = NSMakeRange(entryContent.length - 1, 1);
-                [NSURLConnection sendAsynchronousRequest:[NSURLRequest requestWithURL:asset.URL]
-                                                   queue:[NSOperationQueue mainQueue]
-                                       completionHandler:^(NSURLResponse *response,
-                                                           NSData *data,
-                                                           NSError *connectionError) {
-                                           [self fittingImageFromData:data insertIntoRange:range];
-                                       }];
-                
+                if ([asset.MIMEType hasPrefix:@"image/"]) {
+                    [entryContent appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
+                    
+                    NSRange range = NSMakeRange(entryContent.length - 1, 1);
+                    [NSURLConnection sendAsynchronousRequest:[NSURLRequest requestWithURL:asset.URL]
+                                                       queue:[NSOperationQueue mainQueue]
+                                           completionHandler:^(NSURLResponse *response,
+                                                               NSData *data,
+                                                               NSError *connectionError) {
+                                               [self fittingImageFromData:data insertIntoRange:range];
+                                           }];
+                }
                 break;
             }
             
@@ -134,11 +147,13 @@
     NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
     paragraphStyle.alignment = NSTextAlignmentCenter;
     
+    NSAttributedString* padding = [[NSAttributedString alloc] initWithString:@"\n\n\n"];
+    [entryContent appendAttributedString:padding];
+    
     NSAttributedString* backLink = [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Go ask some more questions!", nil) attributes:@{ NSLinkAttributeName: @"back://", NSParagraphStyleAttributeName: paragraphStyle }];
     [entryContent appendAttributedString:backLink];
     
-    NSAttributedString* bottomPadding = [[NSAttributedString alloc] initWithString:@"\n\n\n"];
-    [entryContent appendAttributedString:bottomPadding];
+    [entryContent appendAttributedString:padding];
     
     self.textView.attributedText = entryContent;
 }
@@ -146,6 +161,15 @@
 #pragma mark - UITextViewDelegate
 
 -(BOOL)textView:(UITextView *)textView shouldInteractWithTextAttachment:(NSTextAttachment *)textAttachment inRange:(NSRange)characterRange {
+    CDAAsset* asset = self.entry.fields[textAttachment.field.identifier];
+    
+    if ([asset.MIMEType hasPrefix:@"audio/"]) {
+        QAWebViewController* webViewVC = [QAWebViewController new];
+        webViewVC.title = textAttachment.field.name;
+        webViewVC.URL = asset.URL;
+        [self.navigationController pushViewController:webViewVC animated:YES];
+    }
+    
     return YES;
 }
 
