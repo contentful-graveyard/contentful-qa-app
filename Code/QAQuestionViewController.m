@@ -67,7 +67,8 @@
 -(void)doneTapped {
     QAEntriesViewController* entriesVC = [QAEntriesViewController new];
     if (self.textField.text.length > 0) {
-        entriesVC.query = @{ @"query": self.textField.text };
+        entriesVC.query = @{ @"query": self.textField.text,
+                             @"content_type": @"ID3Pzepm3xWos20og0W0ye4O" };
     }
     [self.navigationController pushViewController:entriesVC animated:YES];
 }
