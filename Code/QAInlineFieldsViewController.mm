@@ -60,6 +60,26 @@
     self.textView.attributedText = mutableText;
 }
 
+-(NSAttributedString*)horizontalLineAttributedString {
+    NSTextAttachment* attachment = [NSTextAttachment new];
+    attachment.image = [self horizontalLineImage];
+    return [NSAttributedString attributedStringWithAttachment:attachment];
+}
+
+-(UIImage *)horizontalLineImage {
+    CGRect rect = CGRectMake(0.0f, 0.0f, self.view.frame.size.width, 1.0f);
+    UIGraphicsBeginImageContext(rect.size);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    CGContextSetFillColorWithColor(context, [[UIColor blackColor] CGColor]);
+    CGContextFillRect(context, rect);
+    
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return image;
+}
+
 -(id)initWithEntry:(CDAEntry*)entry {
     self = [super init];
     if (self) {
@@ -87,12 +107,16 @@
     
     NSMutableAttributedString* entryContent = [NSMutableAttributedString new];
     
+    NSAttributedString* padding = [[NSAttributedString alloc] initWithString:@"\n\n\n"];
+    
     for (CDAField* field in self.entry.contentType.fields) {
         if ([field.identifier isEqualToString:self.entry.contentType.displayField]) {
             continue;
         }
         
         id value = self.entry.fields[field.identifier];
+        
+        NSAttributedString* headlineString = [[NSAttributedString alloc] initWithString:field.name attributes:@{ NSFontAttributeName: [UIFont boldSystemFontOfSize:18.0] }];
         
         switch (field.type) {
             case CDAFieldTypeLink: {
@@ -129,17 +153,26 @@
             case CDAFieldTypeSymbol:
             case CDAFieldTypeText: {
                 NSAttributedString* attrString = [[self class] attributedStringFromMarkdownString:value];
+                [entryContent appendAttributedString:headlineString];
+                [entryContent appendAttributedString:padding];
                 [entryContent appendAttributedString:attrString];
+                [entryContent appendAttributedString:[self horizontalLineAttributedString]];
                 break;
             }
                 
-            case CDAFieldTypeArray:
-            case CDAFieldTypeBoolean:
             case CDAFieldTypeDate:
             case CDAFieldTypeInteger:
+            case CDAFieldTypeNumber:
+                [entryContent appendAttributedString:headlineString];
+                [entryContent appendAttributedString:padding];
+                [entryContent appendAttributedString:[[NSAttributedString alloc] initWithString:[value description]]];
+                [entryContent appendAttributedString:[self horizontalLineAttributedString]];
+                break;
+                
+            case CDAFieldTypeArray:
+            case CDAFieldTypeBoolean:
             case CDAFieldTypeLocation:
             case CDAFieldTypeNone:
-            case CDAFieldTypeNumber:
                 break;
         }
     }
@@ -147,12 +180,10 @@
     NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
     paragraphStyle.alignment = NSTextAlignmentCenter;
     
-    NSAttributedString* padding = [[NSAttributedString alloc] initWithString:@"\n\n\n"];
-    [entryContent appendAttributedString:padding];
-    
     NSAttributedString* backLink = [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Go ask some more questions!", nil) attributes:@{ NSLinkAttributeName: @"back://", NSParagraphStyleAttributeName: paragraphStyle }];
-    [entryContent appendAttributedString:backLink];
     
+    [entryContent appendAttributedString:padding];
+    [entryContent appendAttributedString:backLink];
     [entryContent appendAttributedString:padding];
     
     self.textView.attributedText = entryContent;
