@@ -66,10 +66,15 @@
 
 -(void)doneTapped {
     QAEntriesViewController* entriesVC = [QAEntriesViewController new];
+    
+    NSMutableDictionary* query = [@{ @"content_type": @"3Pzepm3xWos20og0W0ye4O" } mutableCopy];
+    
     if (self.textField.text.length > 0) {
-        entriesVC.query = @{ @"query": self.textField.text,
-                             @"content_type": @"ID3Pzepm3xWos20og0W0ye4O" };
+        query[@"query"] = self.textField.text;
     }
+    
+    entriesVC.query = query;
+    
     [self.navigationController pushViewController:entriesVC animated:YES];
 }
 
