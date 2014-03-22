@@ -9,9 +9,7 @@
 #import <Bypass/Bypass.h>
 #import <ContentfulDeliveryAPI/ContentfulDeliveryAPI.h>
 
-#import "NSTextAttachment+Field.h"
 #import "QAInlineFieldsViewController.h"
-#import "QAWebViewController.h"
 
 @interface QAInlineFieldsViewController () <UITextViewDelegate>
 
@@ -46,6 +44,77 @@
 
 #pragma mark -
 
+-(NSAttributedString*)convertEntryToAttributedString:(CDAEntry*)entry withOffset:(NSUInteger)offset {
+    NSMutableAttributedString* entryContent = [NSMutableAttributedString new];
+    NSAttributedString* padding = [[NSAttributedString alloc] initWithString:@"\n\n"];
+    
+    for (CDAField* field in entry.contentType.fields) {
+        if ([field.identifier isEqualToString:entry.contentType.displayField]) {
+            continue;
+        }
+        
+        id value = entry.fields[field.identifier];
+        
+        NSAttributedString* headlineString = [[NSAttributedString alloc] initWithString:field.name attributes:@{ NSFontAttributeName: [UIFont boldSystemFontOfSize:16.0] }];
+        
+        switch (field.type) {
+            case CDAFieldTypeLink: {
+                if ([value isKindOfClass:[CDAEntry class]]) {
+                    CDAEntry* subEntry = (CDAEntry*)value;
+                    [entryContent appendAttributedString:[self convertEntryToAttributedString:subEntry withOffset:entryContent.length]];
+                    continue;
+                }
+                
+                if (![value isKindOfClass:[CDAAsset class]]) {
+                    continue;
+                }
+                
+                [entryContent appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
+                NSRange range = NSMakeRange(offset + entryContent.length - 1, 1);
+                
+                [self insertAsset:value usingField:field atRange:range];
+                break;
+            }
+                
+            case CDAFieldTypeSymbol:
+            case CDAFieldTypeText: {
+                NSAttributedString* attrString = [[self class] attributedStringFromMarkdownString:value];
+                [entryContent appendAttributedString:headlineString];
+                [entryContent appendAttributedString:padding];
+                [entryContent appendAttributedString:attrString];
+                [entryContent appendAttributedString:[self horizontalLineAttributedString]];
+                break;
+            }
+                
+            case CDAFieldTypeDate:
+            case CDAFieldTypeInteger:
+            case CDAFieldTypeNumber:
+                [entryContent appendAttributedString:headlineString];
+                [entryContent appendAttributedString:[[NSAttributedString alloc] initWithString:@"\t"]];
+                [entryContent appendAttributedString:[[NSAttributedString alloc] initWithString:[value description]]];
+                [entryContent appendAttributedString:[self horizontalLineAttributedString]];
+                break;
+                
+            case CDAFieldTypeArray:
+                for (id item in ((NSArray*)value)) {
+                    if ([item isKindOfClass:[CDAEntry class]]) {
+                        CDAEntry* subEntry = (CDAEntry*)item;
+                        [entryContent appendAttributedString:[self
+                                                              convertEntryToAttributedString:subEntry withOffset:entryContent.length]];
+                    }
+                }
+                break;
+                
+            case CDAFieldTypeBoolean:
+            case CDAFieldTypeLocation:
+            case CDAFieldTypeNone:
+                break;
+        }
+    }
+    
+    return [entryContent copy];
+}
+
 -(void)fittingImageFromData:(NSData*)data insertIntoRange:(NSRange)range {
     UIImage* image = [UIImage imageWithData:data];
     image = [[self class] imageWithImage:image fitToWidth:self.textView.frame.size.width - 40.0];
@@ -53,7 +122,10 @@
     NSTextAttachment* attachment = [NSTextAttachment new];
     attachment.image = image;
     
-    NSAttributedString* imageAttachment = [NSAttributedString attributedStringWithAttachment:attachment];
+    NSMutableAttributedString* imageAttachment = [NSMutableAttributedString new];
+    [imageAttachment appendAttributedString:[NSAttributedString
+                                             attributedStringWithAttachment:attachment]];
+    [imageAttachment appendAttributedString:[self horizontalLineAttributedString]];
     
     NSMutableAttributedString* mutableText = [self.textView.attributedText mutableCopy];
     [mutableText replaceCharactersInRange:range withAttributedString:imageAttachment];
@@ -92,6 +164,26 @@
     return self;
 }
 
+-(void)insertAsset:(CDAAsset*)asset usingField:(CDAField*)field atRange:(NSRange)range {
+    [asset resolveWithSuccess:^(CDAResponse *response, CDAResource *resource) {
+        CDAAsset* actualAsset = (CDAAsset*)resource;
+        
+        if (![actualAsset.MIMEType hasPrefix:@"image/"]) {
+            return;
+        }
+        
+        [NSURLConnection sendAsynchronousRequest:[NSURLRequest requestWithURL:actualAsset.URL]
+                                           queue:[NSOperationQueue mainQueue]
+                               completionHandler:^(NSURLResponse *response,
+                                                   NSData *data,
+                                                   NSError *connectionError) {
+                                   [self fittingImageFromData:data insertIntoRange:range];
+                               }];
+    } failure:^(CDAResponse *response, NSError *error) {
+        NSLog(@"Error: %@", error);
+    }];
+}
+
 -(void)viewDidLoad {
     [super viewDidLoad];
     
@@ -102,80 +194,13 @@
     self.textView.delegate = self;
     self.textView.editable = NO;
     self.textView.font = [UIFont systemFontOfSize:18.0];
-    self.textView.textContainerInset = UIEdgeInsetsMake(20.0, 10.0, 10.0, 20.0);
+    self.textView.textContainerInset = UIEdgeInsetsMake(20.0, 0.0, 20.0, 0.0);
     [self.view addSubview:self.textView];
     
     NSMutableAttributedString* entryContent = [NSMutableAttributedString new];
+    NSAttributedString* padding = [[NSAttributedString alloc] initWithString:@"\n\n"];
     
-    NSAttributedString* padding = [[NSAttributedString alloc] initWithString:@"\n\n\n"];
-    
-    for (CDAField* field in self.entry.contentType.fields) {
-        if ([field.identifier isEqualToString:self.entry.contentType.displayField]) {
-            continue;
-        }
-        
-        id value = self.entry.fields[field.identifier];
-        
-        NSAttributedString* headlineString = [[NSAttributedString alloc] initWithString:field.name attributes:@{ NSFontAttributeName: [UIFont boldSystemFontOfSize:18.0] }];
-        
-        switch (field.type) {
-            case CDAFieldTypeLink: {
-                if (![value isKindOfClass:[CDAAsset class]]) {
-                    continue;
-                }
-                
-                CDAAsset* asset = value;
-                
-                if ([asset.MIMEType hasPrefix:@"audio/"]) {
-                    NSTextAttachment* attachment = [NSTextAttachment new];
-                    attachment.field = field;
-                    attachment.image = self.playButtonImage;
-                    
-                    NSAttributedString* attachmentString = [NSAttributedString attributedStringWithAttachment:attachment];
-                    [entryContent appendAttributedString:attachmentString];
-                }
-                
-                if ([asset.MIMEType hasPrefix:@"image/"]) {
-                    [entryContent appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
-                    
-                    NSRange range = NSMakeRange(entryContent.length - 1, 1);
-                    [NSURLConnection sendAsynchronousRequest:[NSURLRequest requestWithURL:asset.URL]
-                                                       queue:[NSOperationQueue mainQueue]
-                                           completionHandler:^(NSURLResponse *response,
-                                                               NSData *data,
-                                                               NSError *connectionError) {
-                                               [self fittingImageFromData:data insertIntoRange:range];
-                                           }];
-                }
-                break;
-            }
-            
-            case CDAFieldTypeSymbol:
-            case CDAFieldTypeText: {
-                NSAttributedString* attrString = [[self class] attributedStringFromMarkdownString:value];
-                [entryContent appendAttributedString:headlineString];
-                [entryContent appendAttributedString:padding];
-                [entryContent appendAttributedString:attrString];
-                [entryContent appendAttributedString:[self horizontalLineAttributedString]];
-                break;
-            }
-                
-            case CDAFieldTypeDate:
-            case CDAFieldTypeInteger:
-            case CDAFieldTypeNumber:
-                [entryContent appendAttributedString:headlineString];
-                [entryContent appendAttributedString:padding];
-                [entryContent appendAttributedString:[[NSAttributedString alloc] initWithString:[value description]]];
-                [entryContent appendAttributedString:[self horizontalLineAttributedString]];
-                break;
-                
-            case CDAFieldTypeArray:
-            case CDAFieldTypeBoolean:
-            case CDAFieldTypeLocation:
-            case CDAFieldTypeNone:
-                break;
-        }
-    }
+    [entryContent appendAttributedString:[self convertEntryToAttributedString:self.entry withOffset:0]];
     
     NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
     paragraphStyle.alignment = NSTextAlignmentCenter;
@@ -190,19 +215,6 @@
 }
 
 #pragma mark - UITextViewDelegate
-
--(BOOL)textView:(UITextView *)textView shouldInteractWithTextAttachment:(NSTextAttachment *)textAttachment inRange:(NSRange)characterRange {
-    CDAAsset* asset = self.entry.fields[textAttachment.field.identifier];
-    
-    if ([asset.MIMEType hasPrefix:@"audio/"]) {
-        QAWebViewController* webViewVC = [QAWebViewController new];
-        webViewVC.title = textAttachment.field.name;
-        webViewVC.URL = asset.URL;
-        [self.navigationController pushViewController:webViewVC animated:YES];
-    }
-    
-    return YES;
-}
 
 -(BOOL)textView:(UITextView *)textView shouldInteractWithURL:(NSURL *)URL inRange:(NSRange)range {
     if ([URL.scheme isEqualToString:@"back"]) {

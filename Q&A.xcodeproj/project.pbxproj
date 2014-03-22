@@ -22,8 +22,6 @@
 		A173F5F618D9E9C7000E6F92 /* QAQuestionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5F518D9E9C7000E6F92 /* QAQuestionViewController.m */; };
 		A173F5F918D9ED76000E6F92 /* QAEntriesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5F818D9ED76000E6F92 /* QAEntriesViewController.m */; };
 		A173F5FB18DA04CD000E6F92 /* playbtn.png in Resources */ = {isa = PBXBuildFile; fileRef = A173F5FA18DA04CD000E6F92 /* playbtn.png */; };
-		A173F5FE18DA068D000E6F92 /* QAWebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5FD18DA068D000E6F92 /* QAWebViewController.m */; };
-		A173F60118DA0814000E6F92 /* NSTextAttachment+Field.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F60018DA0814000E6F92 /* NSTextAttachment+Field.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,10 +52,6 @@
 		A173F5F718D9ED76000E6F92 /* QAEntriesViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QAEntriesViewController.h; sourceTree = "<group>"; };
 		A173F5F818D9ED76000E6F92 /* QAEntriesViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QAEntriesViewController.m; sourceTree = "<group>"; };
 		A173F5FA18DA04CD000E6F92 /* playbtn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = playbtn.png; sourceTree = "<group>"; };
-		A173F5FC18DA068D000E6F92 /* QAWebViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QAWebViewController.h; sourceTree = "<group>"; };
-		A173F5FD18DA068D000E6F92 /* QAWebViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QAWebViewController.m; sourceTree = "<group>"; };
-		A173F5FF18DA0814000E6F92 /* NSTextAttachment+Field.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSTextAttachment+Field.h"; sourceTree = "<group>"; };
-		A173F60018DA0814000E6F92 /* NSTextAttachment+Field.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSTextAttachment+Field.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,8 +108,6 @@
 				A173F5E718D9E23D000E6F92 /* CDASpaceSelectionViewController.m */,
 				A173F5E818D9E23D000E6F92 /* CDATextEntryCell.h */,
 				A173F5E918D9E23D000E6F92 /* CDATextEntryCell.m */,
-				A173F5FF18DA0814000E6F92 /* NSTextAttachment+Field.h */,
-				A173F60018DA0814000E6F92 /* NSTextAttachment+Field.m */,
 				A173F5B918D9E027000E6F92 /* QAAppDelegate.h */,
 				A173F5BA18D9E027000E6F92 /* QAAppDelegate.m */,
 				A173F5F718D9ED76000E6F92 /* QAEntriesViewController.h */,
@@ -124,8 +116,6 @@
 				A173F5F018D9E3ED000E6F92 /* QAInlineFieldsViewController.mm */,
 				A173F5F418D9E9C7000E6F92 /* QAQuestionViewController.h */,
 				A173F5F518D9E9C7000E6F92 /* QAQuestionViewController.m */,
-				A173F5FC18DA068D000E6F92 /* QAWebViewController.h */,
-				A173F5FD18DA068D000E6F92 /* QAWebViewController.m */,
 				A173F5EC18D9E2FA000E6F92 /* UIApplication+QA.h */,
 				A173F5ED18D9E2FA000E6F92 /* UIApplication+QA.m */,
 			);
@@ -262,10 +252,8 @@
 				A173F5EE18D9E2FA000E6F92 /* UIApplication+QA.m in Sources */,
 				A173F5F118D9E3ED000E6F92 /* QAInlineFieldsViewController.mm in Sources */,
 				A173F5EA18D9E23D000E6F92 /* CDASpaceSelectionViewController.m in Sources */,
-				A173F5FE18DA068D000E6F92 /* QAWebViewController.m in Sources */,
 				A173F5BB18D9E027000E6F92 /* QAAppDelegate.m in Sources */,
 				A173F5B718D9E027000E6F92 /* main.m in Sources */,
-				A173F60118DA0814000E6F92 /* NSTextAttachment+Field.m in Sources */,
 				A173F5F618D9E9C7000E6F92 /* QAQuestionViewController.m in Sources */,
 				A173F5F918D9ED76000E6F92 /* QAEntriesViewController.m in Sources */,
 			);
