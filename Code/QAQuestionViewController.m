@@ -23,7 +23,7 @@
     self = [super init];
     if (self) {
         self.edgesForExtendedLayout = UIRectEdgeNone;
-        self.title = NSLocalizedString(@"Header Text", nil);
+        self.title = NSLocalizedString(@"Liste der Ergebnisse", nil);
     }
     return self;
 }
@@ -40,7 +40,7 @@
     self.view.backgroundColor = [UIColor whiteColor];
     
     UILabel* questionLabel = [[UILabel alloc] initWithFrame:CGRectMake(10.0, 50.0, self.view.frame.size.width - 20.0, 44.0)];
-    questionLabel.text = NSLocalizedString(@"Ask a question by typing below!", nil);
+    questionLabel.text = NSLocalizedString(@"Finden Sie einfach und schnell Ihren Arzt!", nil);
     questionLabel.textAlignment = NSTextAlignmentCenter;
     [self.view addSubview:questionLabel];
     
@@ -58,7 +58,7 @@
     doneButton.frame = CGRectMake(10.0, CGRectGetMaxY(self.textField.frame) + 10.0, questionLabel.frame.size.width, questionLabel.frame.size.height);
     
     [doneButton addTarget:self action:@selector(doneTapped) forControlEvents:UIControlEventTouchUpInside];
-    [doneButton setTitle:NSLocalizedString(@"Done", nil) forState:UIControlStateNormal];
+    [doneButton setTitle:NSLocalizedString(@"Suchen", nil) forState:UIControlStateNormal];
     [self.view addSubview:doneButton];
 }
 

@@ -205,7 +205,7 @@
     NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
     paragraphStyle.alignment = NSTextAlignmentCenter;
     
-    NSAttributedString* backLink = [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Go ask some more questions!", nil) attributes:@{ NSLinkAttributeName: @"back://", NSParagraphStyleAttributeName: paragraphStyle }];
+    NSAttributedString* backLink = [[NSAttributedString alloc] initWithString:NSLocalizedString(@"Einen anderen Arzt finden", nil) attributes:@{ NSLinkAttributeName: @"back://", NSParagraphStyleAttributeName: paragraphStyle }];
     
     [entryContent appendAttributedString:padding];
     [entryContent appendAttributedString:backLink];

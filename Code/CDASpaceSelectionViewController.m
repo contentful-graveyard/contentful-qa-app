@@ -151,7 +151,7 @@ static NSString* const CDASpaceKey          = @"CDASpaceKey";
     textView.backgroundColor = [UIColor clearColor];
     textView.editable = NO;
     textView.font = [UIFont systemFontOfSize:18.0];
-    textView.text = NSLocalizedString(@"Info text goes here explaining where you get that stuff or something like this.", nil);
+    textView.text = NSLocalizedString(@"Finden oder empfehlen Sie einfach und schnell Ihren Arzt auf clone.de. Nutzen Sie dafür die Sucheingabe oder wählen Sie aus untenstehenden Listen das gesuchte Fachgebiet, Ihren Ort oder die gewünschte Behandlung.", nil);
     textView.textAlignment = NSTextAlignmentCenter;
     [view addSubview:textView];
     
