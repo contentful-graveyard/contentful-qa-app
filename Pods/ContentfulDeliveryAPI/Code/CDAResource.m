@@ -30,6 +30,10 @@
 @implementation CDAResource
 
 +(instancetype)resourceObjectForDictionary:(NSDictionary *)dictionary client:(CDAClient*)client {
+    if (![dictionary isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+    
     NSString* resultType = dictionary[@"sys"][@"type"];
     
     BOOL isLink = [resultType isEqualToString:@"Link"];
@@ -79,6 +83,8 @@
         NSMutableDictionary* systemProperties = [@{} mutableCopy];
         
         NSAssert(dictionary[@"sys"], @"A resource needs system properties");
+        NSAssert([dictionary[@"sys"] isKindOfClass:[NSDictionary class]],
+                 @"Expected a dictionary of system properties");
         [dictionary[@"sys"] enumerateKeysAndObjectsUsingBlock:^(NSString* key, id value, BOOL *stop) {
             if ([@[ @"id", @"type" ] containsObject:key]) {
                 NSAssert([value isKindOfClass:[NSString class]], @"id, type needs to be a string");

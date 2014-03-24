@@ -6,9 +6,11 @@
 //
 //
 
+#import <ContentfulDeliveryAPI/CDAConfiguration.h>
 #import <ISO8601DateFormatter/ISO8601DateFormatter.h>
 #import <MapKit/MapKit.h>
 
+#import "CDAClient+Private.h"
 #import "CDAFieldValueTransformer.h"
 #import "CDAResource+Private.h"
 
@@ -47,14 +49,14 @@
 
 -(id)locationFromDictionary:(NSDictionary*)dictionary {
     CLLocationCoordinate2D location;
-    location.latitude = [dictionary[@"lat"] floatValue];
-    location.longitude = [dictionary[@"lon"] floatValue];
+    if ([dictionary isKindOfClass:[NSDictionary class]]) {
+        location.latitude = [dictionary[@"lat"] floatValue];
+        location.longitude = [dictionary[@"lon"] floatValue];
+    }
     return [NSData dataWithBytes:&location length:sizeof(CLLocationCoordinate2D)];
 }
 
 -(id)transformArrayValue:(id)arrayValue {
-    NSAssert([arrayValue isKindOfClass:[NSArray class]], @"value should be an array.");
-    
     CDAFieldValueTransformer* transformer = [CDAFieldValueTransformer transformerOfType:self.itemType
                                                                                  client:self.client];
     
@@ -68,16 +70,28 @@
 }
 
 -(id)transformedValue:(id)value {
+    if (self.client.configuration.previewMode) {
+        if ([value count] == 1) {
+            value = [[value allValues] firstObject];
+        } else {
+            NSAssert([[value allKeys] containsObject:self.client.configuration.previewLocale],
+                     @"Selected locale %@ is not present in Entry.",
+                     self.client.configuration.previewLocale);
+            
+            value = [value valueForKey:self.client.configuration.previewLocale];
+        }
+    }
+    
     switch (self.type) {
         case CDAFieldTypeArray:
-            if (value == [NSNull null]) {
+            if (value == [NSNull null] || ![value isKindOfClass:[NSArray class]]) {
                 return @[];
             }
             
             return [self transformArrayValue:value];
             
         case CDAFieldTypeDate:
-            if (value == [NSNull null]) {
+            if (value == [NSNull null] || ![value isKindOfClass:[NSString class]]) {
                 return nil;
             }
             
@@ -86,11 +100,10 @@
         case CDAFieldTypeBoolean:
         case CDAFieldTypeInteger:
         case CDAFieldTypeNumber:
-            if (value == [NSNull null]) {
+            if (value == [NSNull null] || ![value isKindOfClass:[NSNumber class]]) {
                 return @0;
             }
             
-            NSAssert([value isKindOfClass:[NSNumber class]], @"value should be a number.");
             return value;
             
         case CDAFieldTypeLink:
@@ -116,6 +129,9 @@
             if ([value isKindOfClass:[NSString class]]) {
                 return value;
             } else {
+                if (![value respondsToSelector:@selector(stringValue)]) {
+                    return @"";
+                }
                 return [value stringValue];
             }
             
