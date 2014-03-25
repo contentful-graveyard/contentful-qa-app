@@ -25,12 +25,38 @@
     return self.apiClient;
 }
 
+-(void)dealloc {
+    [self removeObserver:self forKeyPath:@"entries" context:NULL];
+}
+
 -(id)init {
     self = [super initWithCellMapping:nil];
     if (self) {
         self.apiClient = [[CDAClient alloc] initWithSpaceKey:@"id73wx4ydrgy" accessToken:@"89d01e01d7f92390a7196d60f1780293051bf0cf70f172b2fe73c4096af6f7a4"];
+        
+        [self addObserver:self forKeyPath:@"entries" options:0 context:NULL];
     }
     return self;
+}
+
+-(void)observeValueForKeyPath:(NSString *)keyPath
+                     ofObject:(id)object
+                       change:(NSDictionary *)change
+                      context:(void *)context {
+    if (self.items.count == 0) {
+        UILabel* noResultsView = [[UILabel alloc] initWithFrame:self.view.bounds];
+        noResultsView.alpha = 0.0;
+        noResultsView.backgroundColor = [UIColor whiteColor];
+        noResultsView.font = [UIFont boldSystemFontOfSize:20.0];
+        noResultsView.numberOfLines = 0;
+        noResultsView.text = [NSString stringWithFormat:NSLocalizedString(@"Keine Ergebnisse für \"%@\" gefunden.", nil), self.query[@"query"]];
+        noResultsView.textAlignment = NSTextAlignmentCenter;
+        [self.view addSubview:noResultsView];
+        
+        [UIView animateWithDuration:0.2 animations:^{
+            noResultsView.alpha = 1.0;
+        }];
+    }
 }
 
 #pragma mark - CDAEntriesViewControllerDelegate
