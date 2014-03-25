@@ -25,12 +25,16 @@
 +(NSAttributedString*)attributedStringFromMarkdownString:(NSString*)markdownString {
     BPDocument* document = [[BPParser new] parse:markdownString];
     BPAttributedStringConverter* converter = [BPAttributedStringConverter new];
-    return [converter convertDocument:document];
+    NSMutableAttributedString* attributedString = [[converter convertDocument:document] mutableCopy];
+    [attributedString addAttribute:NSBackgroundColorAttributeName
+                             value:[UIColor whiteColor]
+                             range:NSMakeRange(0, attributedString.length)];
+    return attributedString;
 }
 
-+(UIImage*)imageWithImage:(UIImage *)image fitToWidth:(CGFloat)width {
-    CGFloat ratio = image.size.width / width;
-    CGFloat height = image.size.height / ratio;
++(UIImage*)imageWithImage:(UIImage *)image fitToHeight:(CGFloat)height {
+    CGFloat ratio = image.size.height / height;
+    CGFloat width = image.size.width / ratio;
     CGSize size = CGSizeMake(width, height);
     
     UIGraphicsBeginImageContext(size);
@@ -58,7 +62,7 @@
         
         id value = entry.fields[field.identifier];
         
-        NSAttributedString* headlineString = [[NSAttributedString alloc] initWithString:field.name attributes:@{ NSFontAttributeName: [UIFont boldSystemFontOfSize:16.0] }];
+        NSAttributedString* headlineString = [[NSAttributedString alloc] initWithString:field.name attributes:@{ NSFontAttributeName: [UIFont boldSystemFontOfSize:16.0], NSForegroundColorAttributeName: [UIColor darkGrayColor] }];
         
         switch (field.type) {
             case CDAFieldTypeLink: {
@@ -120,14 +124,21 @@
 
 -(void)fittingImageFromData:(NSData*)data insertIntoRange:(NSRange)range {
     UIImage* image = [UIImage imageWithData:data];
-    image = [[self class] imageWithImage:image fitToWidth:self.textView.frame.size.width - 40.0];
+    image = [[self class] imageWithImage:image fitToHeight:250.0];
     
     NSTextAttachment* attachment = [NSTextAttachment new];
     attachment.image = image;
     
+    NSMutableParagraphStyle *paragraphStyle = [NSMutableParagraphStyle new];
+    paragraphStyle.alignment = NSTextAlignmentCenter;
+    
+    NSMutableDictionary *newAttributes = [NSMutableDictionary new];
+    [newAttributes setObject:attachment forKey:NSAttachmentAttributeName];
+    [newAttributes setObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
+    
     NSMutableAttributedString* imageAttachment = [NSMutableAttributedString new];
-    [imageAttachment appendAttributedString:[NSAttributedString
-                                             attributedStringWithAttachment:attachment]];
+    [imageAttachment appendAttributedString:[[NSAttributedString alloc]
+                                             initWithString:@"\ufffc" attributes:newAttributes]];
     [imageAttachment appendAttributedString:[self horizontalLineAttributedString]];
     
     NSMutableAttributedString* mutableText = [self.textView.attributedText mutableCopy];
@@ -136,23 +147,7 @@
 }
 
 -(NSAttributedString*)horizontalLineAttributedString {
-    NSTextAttachment* attachment = [NSTextAttachment new];
-    attachment.image = [self horizontalLineImage];
-    return [NSAttributedString attributedStringWithAttachment:attachment];
-}
-
--(UIImage *)horizontalLineImage {
-    CGRect rect = CGRectMake(0.0f, 0.0f, self.view.frame.size.width, 1.0f);
-    UIGraphicsBeginImageContext(rect.size);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    
-    CGContextSetFillColorWithColor(context, [[UIColor blackColor] CGColor]);
-    CGContextFillRect(context, rect);
-    
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    
-    return image;
+    return [[NSAttributedString alloc] initWithString:@"\n\n"];
 }
 
 -(id)initWithEntry:(CDAEntry*)entry {
@@ -187,14 +182,16 @@
 -(void)viewDidLoad {
     [super viewDidLoad];
     
-    self.view.backgroundColor = [UIColor whiteColor];
-    
     self.textView = [[UITextView alloc] initWithFrame:self.view.bounds];
     self.textView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.textView.backgroundColor = [UIColor colorWithRed:0xDD / 255.0
+                                                    green:0xDD / 255.0
+                                                     blue:0xDD / 255.0
+                                                    alpha:1.0];
     self.textView.delegate = self;
     self.textView.editable = NO;
     self.textView.font = [UIFont systemFontOfSize:18.0];
-    self.textView.textContainerInset = UIEdgeInsetsMake(20.0, 0.0, 20.0, 0.0);
+    self.textView.textContainerInset = UIEdgeInsetsMake(20.0, 20.0, 20.0, 20.0);
     [self.view addSubview:self.textView];
     
     NSMutableAttributedString* entryContent = [NSMutableAttributedString new];
