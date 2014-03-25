@@ -7,6 +7,7 @@
 //
 
 #import "QAEntriesViewController.h"
+#import "QAInfoViewController.h"
 #import "QAQuestionViewController.h"
 
 @interface QAQuestionViewController () <UITextFieldDelegate>
@@ -24,6 +25,12 @@
     if (self) {
         self.edgesForExtendedLayout = UIRectEdgeNone;
         self.title = NSLocalizedString(@"Liste der Ergebnisse", nil);
+        
+        UIButton* infoButton = [UIButton buttonWithType:UIButtonTypeInfoLight];
+        [infoButton addTarget:self
+                       action:@selector(infoTapped)
+             forControlEvents:UIControlEventTouchUpInside];
+        self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:infoButton];
     }
     return self;
 }
@@ -77,6 +84,11 @@
     entriesVC.query = query;
     
     [self.navigationController pushViewController:entriesVC animated:YES];
+}
+
+-(void)infoTapped {
+    UINavigationController* navigationController = [[UINavigationController alloc] initWithRootViewController:[QAInfoViewController new]];
+    [self presentViewController:navigationController animated:YES completion:nil];
 }
 
 #pragma mark - UITextFieldDelegate

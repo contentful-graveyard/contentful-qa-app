@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		260B1B2E25714E00BC9A877D /* libPods-Q&A.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F4E8C339F334ADAA0C40419 /* libPods-Q&A.a */; };
+		A12797A918E1A97100043A44 /* QAInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A12797A818E1A97100043A44 /* QAInfoViewController.m */; };
 		A173F5AB18D9E027000E6F92 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A173F5AA18D9E027000E6F92 /* Foundation.framework */; };
 		A173F5AD18D9E027000E6F92 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A173F5AC18D9E027000E6F92 /* CoreGraphics.framework */; };
 		A173F5AF18D9E027000E6F92 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A173F5AE18D9E027000E6F92 /* UIKit.framework */; };
@@ -22,6 +23,8 @@
 /* Begin PBXFileReference section */
 		0F4E8C339F334ADAA0C40419 /* libPods-Q&A.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Q&A.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3671E794DEAC4655A57A1514 /* Pods-Q&A.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Q&A.xcconfig"; path = "Pods/Pods-Q&A.xcconfig"; sourceTree = "<group>"; };
+		A12797A718E1A97100043A44 /* QAInfoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QAInfoViewController.h; sourceTree = "<group>"; };
+		A12797A818E1A97100043A44 /* QAInfoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QAInfoViewController.m; sourceTree = "<group>"; };
 		A173F5A718D9E027000E6F92 /* Q&A.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Q&A.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A173F5AA18D9E027000E6F92 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		A173F5AC18D9E027000E6F92 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -95,6 +98,8 @@
 				A173F5BA18D9E027000E6F92 /* QAAppDelegate.m */,
 				A173F5F718D9ED76000E6F92 /* QAEntriesViewController.h */,
 				A173F5F818D9ED76000E6F92 /* QAEntriesViewController.m */,
+				A12797A718E1A97100043A44 /* QAInfoViewController.h */,
+				A12797A818E1A97100043A44 /* QAInfoViewController.m */,
 				A173F5EF18D9E3ED000E6F92 /* QAInlineFieldsViewController.h */,
 				A173F5F018D9E3ED000E6F92 /* QAInlineFieldsViewController.mm */,
 				A173F5F418D9E9C7000E6F92 /* QAQuestionViewController.h */,
@@ -229,6 +234,7 @@
 				A173F5BB18D9E027000E6F92 /* QAAppDelegate.m in Sources */,
 				A173F5B718D9E027000E6F92 /* main.m in Sources */,
 				A173F5F618D9E9C7000E6F92 /* QAQuestionViewController.m in Sources */,
+				A12797A918E1A97100043A44 /* QAInfoViewController.m in Sources */,
 				A173F5F918D9ED76000E6F92 /* QAEntriesViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
