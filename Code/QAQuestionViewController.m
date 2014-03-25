@@ -40,6 +40,7 @@
     self.view.backgroundColor = [UIColor whiteColor];
     
     UILabel* questionLabel = [[UILabel alloc] initWithFrame:CGRectMake(10.0, 50.0, self.view.frame.size.width - 20.0, 44.0)];
+    questionLabel.numberOfLines = 0;
     questionLabel.text = NSLocalizedString(@"Finden Sie einfach und schnell Ihren Arzt!", nil);
     questionLabel.textAlignment = NSTextAlignmentCenter;
     [self.view addSubview:questionLabel];
