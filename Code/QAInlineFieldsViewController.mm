@@ -52,6 +52,10 @@
             continue;
         }
         
+        if (field.disabled) {
+            continue;
+        }
+        
         id value = entry.fields[field.identifier];
         
         NSAttributedString* headlineString = [[NSAttributedString alloc] initWithString:field.name attributes:@{ NSFontAttributeName: [UIFont boldSystemFontOfSize:16.0] }];
