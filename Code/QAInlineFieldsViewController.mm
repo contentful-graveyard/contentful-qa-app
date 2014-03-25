@@ -14,7 +14,6 @@
 @interface QAInlineFieldsViewController () <UITextViewDelegate>
 
 @property (nonatomic) CDAEntry* entry;
-@property (nonatomic) UIImage* playButtonImage;
 @property (nonatomic) UITextView* textView;
 
 @end
@@ -157,9 +156,6 @@
     if (self) {
         self.entry = entry;
         self.title = self.entry.fields[self.entry.contentType.displayField];
-        
-        UIImage* playButtonImage = [UIImage imageNamed:@"playbtn"];
-        self.playButtonImage = [[self class] imageWithImage:playButtonImage fitToWidth:200.0];
     }
     return self;
 }

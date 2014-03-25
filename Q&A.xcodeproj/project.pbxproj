@@ -15,10 +15,8 @@
 		A173F5BB18D9E027000E6F92 /* QAAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5BA18D9E027000E6F92 /* QAAppDelegate.m */; };
 		A173F5BD18D9E027000E6F92 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A173F5BC18D9E027000E6F92 /* Images.xcassets */; };
 		A173F5F118D9E3ED000E6F92 /* QAInlineFieldsViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A173F5F018D9E3ED000E6F92 /* QAInlineFieldsViewController.mm */; };
-		A173F5F318D9E8E6000E6F92 /* SpaceSelection.jpg in Resources */ = {isa = PBXBuildFile; fileRef = A173F5F218D9E8E6000E6F92 /* SpaceSelection.jpg */; };
 		A173F5F618D9E9C7000E6F92 /* QAQuestionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5F518D9E9C7000E6F92 /* QAQuestionViewController.m */; };
 		A173F5F918D9ED76000E6F92 /* QAEntriesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5F818D9ED76000E6F92 /* QAEntriesViewController.m */; };
-		A173F5FB18DA04CD000E6F92 /* playbtn.png in Resources */ = {isa = PBXBuildFile; fileRef = A173F5FA18DA04CD000E6F92 /* playbtn.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,12 +35,10 @@
 		A173F5C318D9E027000E6F92 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		A173F5EF18D9E3ED000E6F92 /* QAInlineFieldsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QAInlineFieldsViewController.h; sourceTree = "<group>"; };
 		A173F5F018D9E3ED000E6F92 /* QAInlineFieldsViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = QAInlineFieldsViewController.mm; sourceTree = "<group>"; };
-		A173F5F218D9E8E6000E6F92 /* SpaceSelection.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = SpaceSelection.jpg; sourceTree = "<group>"; };
 		A173F5F418D9E9C7000E6F92 /* QAQuestionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QAQuestionViewController.h; sourceTree = "<group>"; };
 		A173F5F518D9E9C7000E6F92 /* QAQuestionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QAQuestionViewController.m; sourceTree = "<group>"; };
 		A173F5F718D9ED76000E6F92 /* QAEntriesViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QAEntriesViewController.h; sourceTree = "<group>"; };
 		A173F5F818D9ED76000E6F92 /* QAEntriesViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QAEntriesViewController.m; sourceTree = "<group>"; };
-		A173F5FA18DA04CD000E6F92 /* playbtn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = playbtn.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,8 +117,6 @@
 		A173F5D918D9E042000E6F92 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				A173F5FA18DA04CD000E6F92 /* playbtn.png */,
-				A173F5F218D9E8E6000E6F92 /* SpaceSelection.jpg */,
 				A173F5BC18D9E027000E6F92 /* Images.xcassets */,
 			);
 			path = Resources;
@@ -187,8 +181,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A173F5FB18DA04CD000E6F92 /* playbtn.png in Resources */,
-				A173F5F318D9E8E6000E6F92 /* SpaceSelection.jpg in Resources */,
 				A173F5BD18D9E027000E6F92 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
