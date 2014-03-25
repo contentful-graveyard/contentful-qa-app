@@ -215,8 +215,7 @@
 
 -(BOOL)textView:(UITextView *)textView shouldInteractWithURL:(NSURL *)URL inRange:(NSRange)range {
     if ([URL.scheme isEqualToString:@"back"]) {
-        UIViewController* viewController = self.navigationController.viewControllers[1];
-        [self.navigationController popToViewController:viewController animated:YES];
+        [self.navigationController popToRootViewControllerAnimated:YES];
         return NO;
     }
     
