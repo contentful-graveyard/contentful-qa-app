@@ -14,9 +14,6 @@
 		A173F5B718D9E027000E6F92 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5B618D9E027000E6F92 /* main.m */; };
 		A173F5BB18D9E027000E6F92 /* QAAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5BA18D9E027000E6F92 /* QAAppDelegate.m */; };
 		A173F5BD18D9E027000E6F92 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A173F5BC18D9E027000E6F92 /* Images.xcassets */; };
-		A173F5EA18D9E23D000E6F92 /* CDASpaceSelectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5E718D9E23D000E6F92 /* CDASpaceSelectionViewController.m */; };
-		A173F5EB18D9E23D000E6F92 /* CDATextEntryCell.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5E918D9E23D000E6F92 /* CDATextEntryCell.m */; };
-		A173F5EE18D9E2FA000E6F92 /* UIApplication+QA.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5ED18D9E2FA000E6F92 /* UIApplication+QA.m */; };
 		A173F5F118D9E3ED000E6F92 /* QAInlineFieldsViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A173F5F018D9E3ED000E6F92 /* QAInlineFieldsViewController.mm */; };
 		A173F5F318D9E8E6000E6F92 /* SpaceSelection.jpg in Resources */ = {isa = PBXBuildFile; fileRef = A173F5F218D9E8E6000E6F92 /* SpaceSelection.jpg */; };
 		A173F5F618D9E9C7000E6F92 /* QAQuestionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A173F5F518D9E9C7000E6F92 /* QAQuestionViewController.m */; };
@@ -38,12 +35,6 @@
 		A173F5BA18D9E027000E6F92 /* QAAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QAAppDelegate.m; sourceTree = "<group>"; };
 		A173F5BC18D9E027000E6F92 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		A173F5C318D9E027000E6F92 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
-		A173F5E618D9E23D000E6F92 /* CDASpaceSelectionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDASpaceSelectionViewController.h; sourceTree = "<group>"; };
-		A173F5E718D9E23D000E6F92 /* CDASpaceSelectionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDASpaceSelectionViewController.m; sourceTree = "<group>"; };
-		A173F5E818D9E23D000E6F92 /* CDATextEntryCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDATextEntryCell.h; sourceTree = "<group>"; };
-		A173F5E918D9E23D000E6F92 /* CDATextEntryCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDATextEntryCell.m; sourceTree = "<group>"; };
-		A173F5EC18D9E2FA000E6F92 /* UIApplication+QA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIApplication+QA.h"; sourceTree = "<group>"; };
-		A173F5ED18D9E2FA000E6F92 /* UIApplication+QA.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIApplication+QA.m"; sourceTree = "<group>"; };
 		A173F5EF18D9E3ED000E6F92 /* QAInlineFieldsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QAInlineFieldsViewController.h; sourceTree = "<group>"; };
 		A173F5F018D9E3ED000E6F92 /* QAInlineFieldsViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = QAInlineFieldsViewController.mm; sourceTree = "<group>"; };
 		A173F5F218D9E8E6000E6F92 /* SpaceSelection.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = SpaceSelection.jpg; sourceTree = "<group>"; };
@@ -104,10 +95,6 @@
 		A173F5B018D9E027000E6F92 /* Code */ = {
 			isa = PBXGroup;
 			children = (
-				A173F5E618D9E23D000E6F92 /* CDASpaceSelectionViewController.h */,
-				A173F5E718D9E23D000E6F92 /* CDASpaceSelectionViewController.m */,
-				A173F5E818D9E23D000E6F92 /* CDATextEntryCell.h */,
-				A173F5E918D9E23D000E6F92 /* CDATextEntryCell.m */,
 				A173F5B918D9E027000E6F92 /* QAAppDelegate.h */,
 				A173F5BA18D9E027000E6F92 /* QAAppDelegate.m */,
 				A173F5F718D9ED76000E6F92 /* QAEntriesViewController.h */,
@@ -116,8 +103,6 @@
 				A173F5F018D9E3ED000E6F92 /* QAInlineFieldsViewController.mm */,
 				A173F5F418D9E9C7000E6F92 /* QAQuestionViewController.h */,
 				A173F5F518D9E9C7000E6F92 /* QAQuestionViewController.m */,
-				A173F5EC18D9E2FA000E6F92 /* UIApplication+QA.h */,
-				A173F5ED18D9E2FA000E6F92 /* UIApplication+QA.m */,
 			);
 			path = Code;
 			sourceTree = "<group>";
@@ -248,10 +233,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A173F5EB18D9E23D000E6F92 /* CDATextEntryCell.m in Sources */,
-				A173F5EE18D9E2FA000E6F92 /* UIApplication+QA.m in Sources */,
 				A173F5F118D9E3ED000E6F92 /* QAInlineFieldsViewController.mm in Sources */,
-				A173F5EA18D9E23D000E6F92 /* CDASpaceSelectionViewController.m in Sources */,
 				A173F5BB18D9E027000E6F92 /* QAAppDelegate.m in Sources */,
 				A173F5B718D9E027000E6F92 /* main.m in Sources */,
 				A173F5F618D9E9C7000E6F92 /* QAQuestionViewController.m in Sources */,
