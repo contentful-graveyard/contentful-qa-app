@@ -26,9 +26,9 @@
     BPDocument* document = [[BPParser new] parse:markdownString];
     BPAttributedStringConverter* converter = [BPAttributedStringConverter new];
     NSMutableAttributedString* attributedString = [[converter convertDocument:document] mutableCopy];
-    [attributedString addAttribute:NSBackgroundColorAttributeName
-                             value:[UIColor whiteColor]
-                             range:NSMakeRange(0, attributedString.length)];
+    [attributedString addAttributes:@{ NSStrokeWidthAttributeName: @(-3),
+                                       NSStrokeColorAttributeName: [UIColor grayColor] }
+                              range:NSMakeRange(0, attributedString.length)];
     return attributedString;
 }
 
@@ -99,6 +99,7 @@
                 [entryContent appendAttributedString:headlineString];
                 [entryContent appendAttributedString:[[NSAttributedString alloc] initWithString:@"\t"]];
                 [entryContent appendAttributedString:[[NSAttributedString alloc] initWithString:[value description]]];
+                [entryContent appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
                 [entryContent appendAttributedString:[self horizontalLineAttributedString]];
                 break;
                 
@@ -140,6 +141,7 @@
     [imageAttachment appendAttributedString:[[NSAttributedString alloc]
                                              initWithString:@"\ufffc" attributes:newAttributes]];
     [imageAttachment appendAttributedString:[self horizontalLineAttributedString]];
+    [imageAttachment appendAttributedString:[self horizontalLineAttributedString]];
     
     NSMutableAttributedString* mutableText = [self.textView.attributedText mutableCopy];
     [mutableText replaceCharactersInRange:range withAttributedString:imageAttachment];
@@ -147,7 +149,7 @@
 }
 
 -(NSAttributedString*)horizontalLineAttributedString {
-    return [[NSAttributedString alloc] initWithString:@"\n\n"];
+    return [[NSAttributedString alloc] initWithString:@"\n"];
 }
 
 -(id)initWithEntry:(CDAEntry*)entry {
@@ -184,10 +186,7 @@
     
     self.textView = [[UITextView alloc] initWithFrame:self.view.bounds];
     self.textView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    self.textView.backgroundColor = [UIColor colorWithRed:0xDD / 255.0
-                                                    green:0xDD / 255.0
-                                                     blue:0xDD / 255.0
-                                                    alpha:1.0];
+    self.textView.backgroundColor = [UIColor whiteColor];
     self.textView.delegate = self;
     self.textView.editable = NO;
     self.textView.font = [UIFont systemFontOfSize:18.0];
