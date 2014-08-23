@@ -15,7 +15,7 @@
 @implementation CDAFieldCell
 
 -(id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-    self = [super initWithStyle:UITableViewCellStyleValue2 reuseIdentifier:reuseIdentifier];
+    self = [super initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:reuseIdentifier];
     return self;
 }
 
@@ -44,11 +44,13 @@
             self.selectionStyle = UITableViewCellSelectionStyleDefault;
             return;
             
-        case CDAFieldTypeLink: {
-            self.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            self.selectionStyle = UITableViewCellSelectionStyleDefault;
+        case CDAFieldTypeLink:
+        case CDAFieldTypeObject:
+            if (_value) {
+                self.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                self.selectionStyle = UITableViewCellSelectionStyleDefault;
+            }
             return;
-        }
         
         case CDAFieldTypeBoolean:
             self.detailTextLabel.text = [value boolValue] ? NSLocalizedString(@"yes", nil) : NSLocalizedString(@"no", nil);
@@ -85,7 +87,7 @@
             }
             return;
             
-        case CDAFieldTypeNone:
+        default:
             return;
     }
     

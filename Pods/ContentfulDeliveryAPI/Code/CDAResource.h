@@ -8,10 +8,11 @@
 
 #import <Foundation/Foundation.h>
 
+@class CDAClient;
 @class CDAResponse;
 
 /** Base class of all remotely available entities. */
-@interface CDAResource : NSObject
+@interface CDAResource : NSObject <NSCoding, NSSecureCoding>
 
 /** @name Accessing System Properties */
 
@@ -19,6 +20,38 @@
 @property (nonatomic, readonly) NSString* identifier;
 /** Value of all system properties of this Resource. */
 @property (nonatomic, readonly) NSDictionary* sys;
+
+/** @name Comparing Resources */
+
+/**
+ *  Returns a Boolean value that indicates whether a given Resource is equal to the receiver.
+ *
+ *  @param resource The Resource with which to compare the receiver.
+ *
+ *  @return `YES` if `resource` is equivalent to the receiver, otherwise `NO`.
+ */
+-(BOOL)isEqualToResource:(CDAResource*)resource;
+
+/** @name Persisting Resources */
+
+/**
+ *  Read a previously serialized Resource from file.
+ *
+ *  @param filePath The path to the file with a serialized Resource.
+ *  @param client   The client to use for upcoming requests.
+ *
+ *  @return A new Resource initialized with values from a previously serialized Resource.
+ */
++(instancetype)readFromFile:(NSString*)filePath client:(CDAClient*)client;
+
+/**
+ *  Serialize a Resource to a file.
+ *
+ *  This can be used for offline caching of Resources.
+ *
+ *  @param filePath The path to the file to which the Resource should be written.
+ */
+-(void)writeToFile:(NSString*)filePath;
 
 /** @name Accessing Remote Data */
 

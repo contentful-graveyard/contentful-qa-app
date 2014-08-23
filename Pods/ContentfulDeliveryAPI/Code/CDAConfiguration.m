@@ -6,13 +6,20 @@
 //
 //
 
-#import "CDAConfiguration.h"
+#import "CDAConfiguration+Private.h"
+
+@interface CDAConfiguration ()
+
+@property (nonatomic) BOOL usesManagementAPI;
+
+@end
+
+#pragma mark -
 
 @implementation CDAConfiguration
 
 +(instancetype)defaultConfiguration {
     CDAConfiguration* configuration = [CDAConfiguration new];
-    configuration.previewLocale = nil;
     configuration.previewMode = NO;
     configuration.secure = YES;
     configuration.server = @"cdn.contentful.com";

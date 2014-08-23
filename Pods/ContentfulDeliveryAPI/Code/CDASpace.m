@@ -7,11 +7,10 @@
 //
 
 #import "CDAResource+Private.h"
-#import "CDASpace.h"
+#import "CDASpace+Private.h"
 
 @interface CDASpace ()
 
-@property (nonatomic) NSArray* locales;
 @property (nonatomic) NSString* name;
 
 @end
@@ -29,10 +28,21 @@
 -(id)initWithDictionary:(NSDictionary *)dictionary client:(CDAClient*)client {
     self = [super initWithDictionary:dictionary client:client];
     if (self) {
+        self.defaultLocale = @"en-US";
         self.locales = dictionary[@"locales"];
         self.name = dictionary[@"name"];
+        
+        for (NSDictionary* locale in self.locales) {
+            if ([locale[@"default"] boolValue]) {
+                self.defaultLocale = locale[@"code"];
+            }
+        }
     }
     return self;
+}
+
+-(NSArray *)localeCodes {
+    return [self.locales valueForKey:@"code"] ?: @[ self.defaultLocale ];
 }
 
 @end

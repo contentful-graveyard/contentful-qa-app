@@ -6,6 +6,14 @@
 //
 //
 
+#import <ContentfulDeliveryAPI/CDAClient.h>
 #import <Foundation/Foundation.h>
 
+NSString* CDACacheDirectory();
+NSString* CDACacheFileNameForQuery(CDAClient* client, CDAResourceType resourceType, NSDictionary* query);
+NSString* CDACacheFileNameForResource(CDAResource* resource);
 NSArray* CDAClassGetSubclasses(Class parentClass);
+void CDADecodeObjectWithCoder(id object, NSCoder* aDecoder);
+void CDAEncodeObjectWithCoder(id object, NSCoder* aCoder);
+BOOL CDAIsNoNetworkError(NSError* error);
+NSString* CDASquashCharactersFromSetInString(NSCharacterSet* characterSet, NSString* string);

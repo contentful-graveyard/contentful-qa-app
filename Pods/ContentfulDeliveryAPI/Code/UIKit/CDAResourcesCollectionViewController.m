@@ -10,11 +10,15 @@
 #import <ContentfulDeliveryAPI/CDAResourceCell.h>
 
 #import "CDAResourcesCollectionViewController.h"
+#import "CDAUtilities.h"
+#import "UIImageView+CDAAsset.h"
 
-@interface CDAResourcesCollectionViewController ()
+@interface CDAResourcesCollectionViewController () <UISearchBarDelegate>
 
+@property (nonatomic, readonly) NSString* cacheFileName;
 @property (nonatomic) NSDictionary* cellMapping;
 @property (nonatomic) CDAArray* resources;
+@property (nonatomic) UISearchBar* searchBar;
 
 @end
 
@@ -28,6 +32,18 @@
 
 #pragma mark -
 
+-(NSString *)cacheFileName {
+    return CDACacheFileNameForQuery(self.client, self.resourceType, self.query);
+}
+
+-(void)handleCaching {
+    if (self.offlineCaching) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            [self.resources writeToFile:self.cacheFileName];
+        });
+    }
+}
+
 -(id)initWithCollectionViewLayout:(UICollectionViewLayout *)layout
                       cellMapping:(NSDictionary*)cellMapping {
     self = [super initWithCollectionViewLayout:layout];
@@ -35,14 +51,76 @@
         self.cellMapping = cellMapping;
         self.resourceType = CDAResourceTypeEntry;
         
+        self.collectionView.alwaysBounceVertical = YES;
+        self.collectionView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
+        
         [self.collectionView registerClass:[[self class] cellClass]
                 forCellWithReuseIdentifier:NSStringFromClass([self class])];
+        
+        [self.collectionView registerClass:[UICollectionReusableView class]
+                forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
+                       withReuseIdentifier:NSStringFromClass([self class])];
     }
     return self;
 }
 
 -(NSArray *)items {
     return self.resources.items;
+}
+
+-(void)performQuery:(NSDictionary*)query {
+    NSAssert(self.client, @"You need to supply a client instance to %@.",
+             NSStringFromClass([self class]));
+    
+    [self.client fetchResourcesOfType:self.resourceType
+                             matching:query
+                              success:^(CDAResponse *response, CDAArray *array) {
+                                  self.resources = array;
+                                  
+                                  [self.collectionView reloadData];
+                                  
+                                  [self handleCaching];
+                              } failure:^(CDAResponse *response, NSError *error) {
+                                  if (CDAIsNoNetworkError(error)) {
+                                      self.resources = [CDAArray readFromFile:self.cacheFileName
+                                                                       client:self.client];
+                                      
+                                      [self.collectionView reloadData];
+                                      return;
+                                  }
+                                  
+                                  [self showError:error];
+                              }];
+}
+
+-(NSDictionary *)query {
+    if (!self.locale) {
+        return _query;
+    }
+    
+    NSMutableDictionary* query = [_query mutableCopy];
+    query[@"locale"] = self.locale;
+    return query;
+}
+
+-(void)setShowSearchBar:(BOOL)showSearchBar {
+    if (_showSearchBar == showSearchBar) {
+        return;
+    }
+    
+    if (showSearchBar) {
+        self.searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0.0, 0.0,
+                                                                       self.view.frame.size.width,
+                                                                       44.0)];
+        self.searchBar.delegate = self;
+        self.searchBar.showsCancelButton = YES;
+    } else {
+        self.searchBar = nil;
+    }
+    
+    _showSearchBar = showSearchBar;
+    
+    [self.collectionView reloadData];
 }
 
 -(void)showError:(NSError*)error {
@@ -57,17 +135,10 @@
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    NSAssert(self.client, @"You need to supply a client instance to CDAEntriesViewController.");
+    self.resources = nil;
+	[self.collectionView reloadData];
     
-    [self.client fetchResourcesOfType:self.resourceType
-                             matching:self.query
-                              success:^(CDAResponse *response, CDAArray *array) {
-                                  self.resources = array;
-                                  
-                                  [self.collectionView reloadData];
-                              } failure:^(CDAResponse *response, NSError *error) {
-                                  [self showError:error];
-                              }];
+    [self performQuery:self.query];
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -78,7 +149,9 @@
         return nil;
     }
     
-    CDAResourceCell* cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([self class]) forIndexPath:indexPath];
+    CDAResourceCell* cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([self class])
+                                                                      forIndexPath:indexPath];
+    cell.imageView.offlineCaching_cda = self.offlineCaching;
     cell.imageView.image = nil;
     
     CDAResource* resource = self.items[indexPath.row];
@@ -92,12 +165,51 @@
     return cell;
 }
 
+-(UICollectionReusableView *)collectionView:(UICollectionView *)collectionView
+          viewForSupplementaryElementOfKind:(NSString *)kind
+                                atIndexPath:(NSIndexPath *)indexPath {
+    if (kind == UICollectionElementKindSectionHeader && self.searchBar) {
+        UICollectionReusableView* container = [collectionView dequeueReusableSupplementaryViewOfKind:kind withReuseIdentifier:NSStringFromClass([self class]) forIndexPath:indexPath];
+        [container addSubview:self.searchBar];
+        
+        if (self.searchBar.text.length == 0) {
+            [collectionView setContentOffset:CGPointMake(0.0, -10.0)];
+        }
+        
+        return container;
+    }
+    
+    return nil;
+}
+
 -(NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     return section == 0 ? self.items.count : 0;
 }
 
 -(NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
     return 1;
+}
+
+#pragma mark - UISearchBarDelegate
+
+-(void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
+    searchBar.text = @"";
+    
+    [self.view endEditing:YES];
+}
+
+-(void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
+    [self.view endEditing:YES];
+    
+    NSMutableDictionary* query = [[NSMutableDictionary alloc] initWithDictionary:self.query];
+    query[@"query"] = searchBar.text;
+    [self performQuery:query];
+}
+
+-(void)searchBarTextDidEndEditing:(UISearchBar *)searchBar {
+    if (searchBar.text.length == 0) {
+        [self performQuery:self.query];
+    }
 }
 
 @end

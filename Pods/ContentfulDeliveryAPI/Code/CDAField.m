@@ -6,10 +6,13 @@
 //
 //
 
+#import <objc/runtime.h>
+
 #import <ContentfulDeliveryAPI/CDAResource.h>
 
-#import "CDAField.h"
+#import "CDAField+Private.h"
 #import "CDAFieldValueTransformer.h"
+#import "CDAUtilities.h"
 
 @interface CDAField ()
 
@@ -19,10 +22,8 @@
 @property (nonatomic) NSString* identifier;
 @property (nonatomic) CDAFieldType itemType;
 @property (nonatomic) BOOL localized;
-@property (nonatomic) NSString* name;
 @property (nonatomic) BOOL required;
 @property (nonatomic) CDAFieldValueTransformer* transformer;
-@property (nonatomic) CDAFieldType type;
 
 @end
 
@@ -30,9 +31,51 @@
 
 @implementation CDAField
 
++(BOOL)supportsSecureCoding {
+    return YES;
+}
+
+#pragma mark -
+
 -(NSString *)description {
     NSString* type = [[self.fieldTypes allKeysForObject:@(self.type)] firstObject];
     return [NSString stringWithFormat:@"CDAField %@ of type %@", self.identifier, type];
+}
+
+-(NSDictionary*)dictionaryRepresentation {
+    NSMutableDictionary* rep = [@{ @"id": self.identifier,
+                                   @"name": self.name } mutableCopy];
+
+    switch (self.type) {
+        case CDAFieldTypeAsset:
+        case CDAFieldTypeEntry:
+            rep[@"type"] = [self fieldTypeToString:CDAFieldTypeLink];
+            rep[@"linkType"] = [self fieldTypeToString:self.type];
+            break;
+
+        default:
+            rep[@"type"] = [self fieldTypeToString:self.type];
+            break;
+    }
+
+    switch (self.itemType) {
+        case CDAFieldTypeNone:
+            break;
+        case CDAFieldTypeAsset:
+        case CDAFieldTypeEntry:
+            rep[@"items"] = @{ @"type": [self fieldTypeToString:CDAFieldTypeLink],
+                               @"linkType": [self fieldTypeToString:self.itemType] };
+            break;
+        default:
+            rep[@"items"] = @{ @"type": [self fieldTypeToString:self.itemType] };
+            break;
+    }
+
+    return rep;
+}
+
+-(void)encodeWithCoder:(NSCoder *)aCoder {
+    CDAEncodeObjectWithCoder(self, aCoder);
 }
 
 -(NSDictionary*)fieldTypes {
@@ -46,10 +89,28 @@
                                             @"Link": @(CDAFieldTypeLink),
                                             @"Location": @(CDAFieldTypeLocation),
                                             @"Number": @(CDAFieldTypeNumber),
+                                            @"Object": @(CDAFieldTypeObject),
                                             @"Symbol": @(CDAFieldTypeSymbol),
                                             @"Text": @(CDAFieldTypeText),
+                                            @"Entry": @(CDAFieldTypeEntry),
+                                            @"Asset": @(CDAFieldTypeAsset),
                                             }; });
     return fieldTypes;
+}
+
+-(NSString*)fieldTypeToString:(CDAFieldType)fieldType {
+    NSArray* possibleFieldTypes = [self.fieldTypes allKeysForObject:@(fieldType)];
+    NSAssert(possibleFieldTypes.count == 1,
+             @"Field-type %ld lacks proper string representation.", (long)fieldType);
+    return possibleFieldTypes[0];
+}
+
+-(id)initWithCoder:(NSCoder *)aDecoder {
+    self = [super init];
+    if (self) {
+        CDADecodeObjectWithCoder(self, aDecoder);
+    }
+    return self;
 }
 
 -(id)initWithDictionary:(NSDictionary *)dictionary client:(CDAClient*)client {

@@ -1,41 +1,42 @@
 PODS:
-  - AFNetworking (2.2.1):
+  - AFNetworking (2.3.1):
     - AFNetworking/NSURLConnection
     - AFNetworking/NSURLSession
     - AFNetworking/Reachability
     - AFNetworking/Security
     - AFNetworking/Serialization
     - AFNetworking/UIKit
-  - AFNetworking/NSURLConnection (2.2.1):
+  - AFNetworking/NSURLConnection (2.3.1):
     - AFNetworking/Reachability
     - AFNetworking/Security
     - AFNetworking/Serialization
-  - AFNetworking/NSURLSession (2.2.1):
-    - AFNetworking/NSURLConnection
-  - AFNetworking/Reachability (2.2.1)
-  - AFNetworking/Security (2.2.1)
-  - AFNetworking/Serialization (2.2.1)
-  - AFNetworking/UIKit (2.2.1):
+  - AFNetworking/NSURLSession (2.3.1):
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+  - AFNetworking/Reachability (2.3.1)
+  - AFNetworking/Security (2.3.1)
+  - AFNetworking/Serialization (2.3.1)
+  - AFNetworking/UIKit (2.3.1):
     - AFNetworking/NSURLConnection
     - AFNetworking/NSURLSession
   - Bypass (1.0.1)
-  - ContentfulDeliveryAPI (0.1.0):
+  - ContentfulDeliveryAPI (1.4.2):
     - AFNetworking
+    - HRCoder
     - ISO8601DateFormatter
+  - HRCoder (1.3.1)
   - ISO8601DateFormatter (0.7)
 
 DEPENDENCIES:
   - Bypass
-  - ContentfulDeliveryAPI (from `https://github.com/contentful/contentful.objc.git`)
-
-EXTERNAL SOURCES:
-  ContentfulDeliveryAPI:
-    :git: https://github.com/contentful/contentful.objc.git
+  - ContentfulDeliveryAPI
 
 SPEC CHECKSUMS:
-  AFNetworking: 0121f4b69be3fa58d1ab317866e036e12ac9651d
-  Bypass: 05609ba2727ae711aa82256e7600b7ac7a174927
-  ContentfulDeliveryAPI: 02e21648138ea540e483c5d5973adc780905e373
-  ISO8601DateFormatter: 00944e437ea647f4244454ce8809d313861d08de
+  AFNetworking: 6d7b76aa5d04c8c37daad3eef4b7e3f2a7620da3
+  Bypass: 225bc63ebb09e5674c1fc460b1708e775f68f52f
+  ContentfulDeliveryAPI: a8fc1965a7af354c8c1fe7567f62dd67016da15f
+  HRCoder: 0952826ddf4213a11be775d01446f61a5df987a4
+  ISO8601DateFormatter: 59731cd880cf87e71b4fa95f0d6b713dcbc4cbce
 
-COCOAPODS: 0.29.0
+COCOAPODS: 0.33.1

@@ -30,14 +30,20 @@ typedef NS_ENUM(NSInteger, CDAFieldType) {
     CDAFieldTypeNone,
     /** Number type with decimals. */
     CDAFieldTypeNumber,
+    /** JSON object. */
+    CDAFieldTypeObject,
     /** Basic list of characters. */
     CDAFieldTypeSymbol,
     /** Same as String, but can be filtered via [Full-Text Search](https://www.contentful.com/developers/documentation/content-delivery-api/#search-filter-full-text). */
     CDAFieldTypeText,
+    /** Used as `itemType` for arrays of entries or as `type` for links. */
+    CDAFieldTypeEntry,
+    /** Used as `itemType` for arrays of assets or as `type` for links. */
+    CDAFieldTypeAsset,
 };
 
 /** A `CDAField` describes a single property of a `CDAEntry`. */
-@interface CDAField : NSObject
+@interface CDAField : NSObject <NSCoding, NSSecureCoding>
 
 /** @name Accessing Field Information */
 

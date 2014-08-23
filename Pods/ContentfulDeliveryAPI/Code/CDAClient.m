@@ -8,22 +8,29 @@
 
 #import <ContentfulDeliveryAPI/CDAAsset.h>
 #import <ContentfulDeliveryAPI/CDAEntry.h>
-#import <ISO8601DateFormatter/ISO8601DateFormatter.h>
+#import <ContentfulDeliveryAPI/CDASpace.h>
 
 #import "CDAArray+Private.h"
 #import "CDAClient+Private.h"
-#import "CDAConfiguration.h"
+#import "CDAConfiguration+Private.h"
 #import "CDAContentType.h"
 #import "CDAContentTypeRegistry.h"
-#import "CDAError.h"
+#import "CDAError+Private.h"
 #import "CDARequestOperationManager.h"
+#import "CDAResource+Private.h"
+#import "CDASyncedSpace+Private.h"
+
+NSString* const CDAContentTypeHeader = @"application/vnd.contentful.delivery.v1+json";
+NSString* const CMAContentTypeHeader = @"application/vnd.contentful.management.v1+json";
 
 @interface CDAClient ()
 
+@property (nonatomic) NSString* accessToken;
 @property (nonatomic) CDAConfiguration* configuration;
 @property (nonatomic) CDAContentTypeRegistry* contentTypeRegistry;
-@property (nonatomic) ISO8601DateFormatter* dateFormatter;
 @property (nonatomic) CDARequestOperationManager* requestOperationManager;
+@property (nonatomic) CDASpace* space;
+@property (nonatomic) NSString* spaceKey;
 
 @end
 
@@ -38,6 +45,27 @@
 }
 
 #pragma mark -
+
+-(instancetype)copyWithSpace:(CDASpace *)space {
+    CDAClient* client = [[[self class] alloc] initWithSpaceKey:space.identifier
+                                                   accessToken:self.accessToken
+                                                 configuration:self.configuration];
+    client.resourceClassPrefix = self.resourceClassPrefix;
+    client.space = space;
+    return client;
+}
+
+-(CDARequest*)deleteURLPath:(NSString*)URLPath
+                    headers:(NSDictionary*)headers
+                 parameters:(NSDictionary*)parameters
+                    success:(CDAObjectFetchedBlock)success
+                    failure:(CDARequestFailureBlock)failure {
+    return [self.requestOperationManager deleteURLPath:URLPath
+                                               headers:headers
+                                            parameters:parameters
+                                               success:success
+                                               failure:failure];
+}
 
 -(void)fetchAllItemsFromArray:(CDAArray*)array
                       success:(void (^)(NSArray* items))success
@@ -71,10 +99,19 @@
                        parameters:(NSDictionary *)parameters
                           success:(CDAArrayFetchedBlock)success
                           failure:(CDARequestFailureBlock)failure {
-    return [self.requestOperationManager fetchArrayAtURLPath:URLPath
-                                                  parameters:parameters
-                                                     success:success
-                                                     failure:failure];
+    if (self.space || !self.spaceKey) {
+        return [self.requestOperationManager fetchArrayAtURLPath:URLPath
+                                                      parameters:parameters
+                                                         success:success
+                                                         failure:failure];
+    } else {
+        return [self fetchSpaceWithSuccess:^(CDAResponse *response, CDASpace *space) {
+            [self.requestOperationManager fetchArrayAtURLPath:URLPath
+                                                   parameters:parameters
+                                                      success:success
+                                                      failure:failure];
+        } failure:failure];
+    }
 }
 
 -(CDARequest*)fetchArrayAtURLPath:(NSString *)URLPath
@@ -90,6 +127,12 @@
                           parameters:query
                              success:success
                              failure:failure];
+}
+
+-(CDAArray *)fetchAssetsMatching:(NSDictionary *)query synchronouslyWithError:(NSError **)error {
+    return [self.requestOperationManager fetchArraySynchronouslyAtURLPath:@"assets"
+                                                               parameters:query
+                                                                    error:error];
 }
 
 -(CDARequest*)fetchAssetsWithSuccess:(CDAArrayFetchedBlock)success
@@ -116,6 +159,12 @@
                                      success(response, [array.items firstObject]);
                                  }
                              } failure:failure];
+}
+
+-(CDAArray*)fetchContentTypesMatching:(NSDictionary*)query synchronouslyWithError:(NSError**)error {
+    return [self.requestOperationManager fetchArraySynchronouslyAtURLPath:@"content_types"
+                                                               parameters:query
+                                                                    error:error];
 }
 
 -(CDARequest*)fetchContentTypesWithSuccess:(CDAArrayFetchedBlock)success
@@ -147,36 +196,18 @@
 -(CDARequest*)fetchEntriesMatching:(NSDictionary *)query
                            success:(CDAArrayFetchedBlock)success
                            failure:(CDARequestFailureBlock)failure {
-    NSMutableDictionary* mutableQuery = [query mutableCopy];
-    [query enumerateKeysAndObjectsUsingBlock:^(NSString* key, id value, BOOL *stop) {
-        if ([value isKindOfClass:[NSArray class]]) {
-            mutableQuery[key] = [value componentsJoinedByString:@","];
-        }
-        
-        if ([value isKindOfClass:[NSDate class]]) {
-            mutableQuery[key] = [self.dateFormatter stringFromDate:value];
-        }
-    }];
-    query = [mutableQuery copy];
-    
-    if (self.contentTypeRegistry.fetched) {
-        return [self fetchArrayAtURLPath:@"entries" parameters:query success:success failure:failure];
-    } else {
-        return [self fetchContentTypesWithSuccess:^(CDAResponse *response, CDAArray *array) {
-            [self fetchArrayAtURLPath:@"entries" parameters:query success:success failure:failure];
-        } failure:failure];
-    }
+    return [self fetchArrayAtURLPath:@"entries" parameters:query success:success failure:failure];
+}
+
+-(CDAArray *)fetchEntriesMatching:(NSDictionary *)query synchronouslyWithError:(NSError **)error {
+    return [self.requestOperationManager fetchArraySynchronouslyAtURLPath:@"entries"
+                                                               parameters:query
+                                                                    error:error];
 }
 
 -(CDARequest*)fetchEntriesWithSuccess:(CDAArrayFetchedBlock)success
                               failure:(CDARequestFailureBlock)failure {
-    if (self.contentTypeRegistry.fetched) {
-        return [self fetchArrayAtURLPath:@"entries" success:success failure:failure];
-    } else {
-        return [self fetchContentTypesWithSuccess:^(CDAResponse *response, CDAArray *array) {
-            [self fetchArrayAtURLPath:@"entries" success:success failure:failure];
-        } failure:failure];
-    }
+    return [self fetchArrayAtURLPath:@"entries" success:success failure:failure];
 }
 
 -(CDARequest*)fetchEntryWithIdentifier:(NSString *)identifier
@@ -236,7 +267,123 @@
 
 -(CDARequest*)fetchSpaceWithSuccess:(CDASpaceFetchedBlock)success
                             failure:(CDARequestFailureBlock)failure {
-    return [self.requestOperationManager fetchSpaceWithSuccess:success failure:failure];
+    if (self.space) {
+        if (success) {
+            success(nil, self.space);
+        }
+        
+        return nil;
+    }
+    
+    return [self.requestOperationManager fetchSpaceWithSuccess:^(CDAResponse *response,
+                                                                 CDASpace *space) {
+        self.space = space;
+        
+        if (success) {
+            success(response, space);
+        }
+    } failure:failure];
+}
+
+-(CDARequest *)fetchURLPath:(NSString *)URLPath
+                 parameters:(NSDictionary *)parameters
+                    success:(CDAObjectFetchedBlock)success
+                    failure:(CDARequestFailureBlock)failure {
+    return [self.requestOperationManager fetchURLPath:URLPath
+                                           parameters:parameters
+                                              success:success
+                                              failure:failure];
+}
+
+-(CDARequest*)initialSynchronizationWithSuccess:(CDASyncedSpaceFetchedBlock)success
+                                        failure:(CDARequestFailureBlock)failure {
+    return [self initialSynchronizationMatching:nil success:success failure:failure];
+}
+
+-(CDARequest *)initialSynchronizationMatching:(NSDictionary *)query
+                                      success:(CDASyncedSpaceFetchedBlock)success
+                                      failure:(CDARequestFailureBlock)failure {
+    if (self.configuration.previewMode) {
+        void(^handler)(NSArray* fetchedAssets, NSArray* fetchedEntries) = ^(NSArray* fetchedAssets,
+                                                                            NSArray* fetchedEntries) {
+            NSMutableDictionary* assets = [@{} mutableCopy];
+            NSMutableDictionary* entries = [@{} mutableCopy];
+            
+            for (CDAAsset* asset in fetchedAssets) {
+                assets[asset.identifier] = asset;
+            }
+            
+            for (CDAEntry* entry in fetchedEntries) {
+                entries[entry.identifier] = entry;
+            }
+            
+            for (CDAEntry* entry in entries.allValues) {
+                [entry resolveLinksWithIncludedAssets:assets entries:entries];
+            }
+            
+            CDASyncedSpace* space = [[CDASyncedSpace alloc] initWithAssets:assets.allValues
+                                                                   entries:entries.allValues];
+            
+            space.client = self;
+            success(nil, space);
+        };
+        
+        return [self fetchAssetsWithSuccess:^(CDAResponse *response, CDAArray *array) {
+            [self fetchAllItemsFromArray:array success:^(NSArray *fetchedAssets) {
+                [self fetchEntriesWithSuccess:^(CDAResponse *response, CDAArray *array) {
+                    [self fetchAllItemsFromArray:array success:^(NSArray *fetchedEntries) {
+                        handler(fetchedAssets, fetchedEntries);
+                    } failure:failure];
+                } failure:failure];
+            } failure:failure];
+        } failure:failure];
+    }
+    
+    CDAArrayFetchedBlock handler = ^(CDAResponse *response, CDAArray *array) {
+        NSMutableDictionary* assets = [@{} mutableCopy];
+        NSMutableDictionary* entries = [@{} mutableCopy];
+        
+        for (CDAResource* resource in array.items) {
+            if ([resource isKindOfClass:[CDAAsset class]]) {
+                assets[resource.identifier] = resource;
+            }
+            
+            if ([resource isKindOfClass:[CDAEntry class]]) {
+                entries[resource.identifier] = resource;
+            }
+        }
+        
+        for (CDAEntry* entry in entries.allValues) {
+            [entry resolveLinksWithIncludedAssets:assets entries:entries];
+        }
+        
+        CDASyncedSpace* space = [[CDASyncedSpace alloc] initWithAssets:assets.allValues
+                                                               entries:entries.allValues];
+        
+        space.client = self;
+        space.nextPageUrl = array.nextPageUrl;
+        space.nextSyncUrl = array.nextSyncUrl;
+        
+        if (success) {
+            if (space.nextPageUrl) {
+                [space performSynchronizationWithSuccess:^{
+                    success(response, space);
+                } failure:failure];
+            } else {
+                [space updateLastSyncTimestamp];
+                
+                success(response, space);
+            }
+        }
+    };
+    
+    NSMutableDictionary* parameters = [NSMutableDictionary dictionaryWithDictionary:query];
+    parameters[@"initial"] = @"true";
+    
+    return [self fetchArrayAtURLPath:@"sync"
+                          parameters:parameters
+                             success:handler
+                             failure:failure];
 }
 
 -(id)init {
@@ -252,18 +399,65 @@
 -(id)initWithSpaceKey:(NSString *)spaceKey
           accessToken:(NSString *)accessToken
         configuration:(CDAConfiguration*)configuration {
+    if (!configuration.usesManagementAPI && (configuration.previewMode || !spaceKey)) {
+        configuration.usesManagementAPI = YES;
+    }
+
     self = [super init];
     if (self) {
+        self.accessToken = accessToken;
         self.configuration = configuration;
         self.contentTypeRegistry = [CDAContentTypeRegistry new];
-        self.dateFormatter = [ISO8601DateFormatter new];
+        self.deepResolving = YES;
+        self.spaceKey = spaceKey;
         self.requestOperationManager = [[CDARequestOperationManager alloc] initWithSpaceKey:spaceKey accessToken:accessToken client:self configuration:configuration];
+        self.resourceClassPrefix = @"CDA";
+
+#ifndef DEBUG
+        if (self.configuration.previewMode) {
+            [[NSException exceptionWithName:NSInternalInconsistencyException
+                                     reason:@"You are using the preview-mode in a release-build"
+                                   userInfo:@{}] raise];
+        }
+#endif
     }
     return self;
 }
 
+-(BOOL)localizationAvailable {
+    return self.configuration.usesManagementAPI || self.synchronizing;
+}
+
+-(CDARequest *)postURLPath:(NSString *)URLPath
+                   headers:(NSDictionary *)headers
+                parameters:(NSDictionary *)parameters
+                   success:(CDAObjectFetchedBlock)success
+                   failure:(CDARequestFailureBlock)failure {
+    return [self.requestOperationManager postURLPath:URLPath
+                                             headers:headers
+                                          parameters:parameters
+                                             success:success
+                                             failure:failure];
+}
+
 -(NSString *)protocol {
     return self.configuration.secure ? @"https" : @"http";
+}
+
+-(CDARequest*)putURLPath:(NSString*)URLPath
+                 headers:(NSDictionary*)headers
+              parameters:(NSDictionary*)parameters
+                 success:(CDAObjectFetchedBlock)success
+                 failure:(CDARequestFailureBlock)failure {
+    return [self.requestOperationManager putURLPath:URLPath
+                                            headers:headers
+                                         parameters:parameters
+                                            success:success
+                                            failure:failure];
+}
+
+-(void)registerClass:(Class)customClass forContentType:(CDAContentType *)contentType {
+    [self.contentTypeRegistry registerClass:customClass forContentType:contentType];
 }
 
 -(void)registerClass:(Class)customClass forContentTypeWithIdentifier:(NSString *)identifier {

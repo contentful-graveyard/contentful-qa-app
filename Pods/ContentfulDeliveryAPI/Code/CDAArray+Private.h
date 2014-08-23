@@ -10,6 +10,10 @@
 
 @interface CDAArray ()
 
+@property (nonatomic, readonly) NSURL* nextPageUrl;
+@property (nonatomic, readonly) NSURL* nextSyncUrl;
 @property (nonatomic) NSDictionary* query;
+
+-(id)initWithItems:(NSArray*)items client:(CDAClient*)client;
 
 @end

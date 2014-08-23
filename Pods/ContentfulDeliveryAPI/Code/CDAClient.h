@@ -16,6 +16,7 @@
 @class CDAResponse;
 @class CDARequest;
 @class CDASpace;
+@class CDASyncedSpace;
 
 /** Possible Resource types. */
 typedef NS_ENUM(NSInteger, CDAResourceType) {
@@ -31,8 +32,10 @@ typedef void(^CDAArrayFetchedBlock)(CDAResponse* response, CDAArray* array);
 typedef void(^CDAAssetFetchedBlock)(CDAResponse* response, CDAAsset* asset);
 typedef void(^CDAContentTypeFetchedBlock)(CDAResponse* response, CDAContentType* contentType);
 typedef void(^CDAEntryFetchedBlock)(CDAResponse* response, CDAEntry* entry);
+typedef void(^CDAObjectFetchedBlock)(CDAResponse* response, id responseObject);
 typedef void(^CDARequestFailureBlock)(CDAResponse* response, NSError* error);
 typedef void(^CDASpaceFetchedBlock)(CDAResponse* response, CDASpace* space);
+typedef void(^CDASyncedSpaceFetchedBlock)(CDAResponse* response, CDASyncedSpace* space);
 
 /**
  The CDAClient is used to request any information from the server. A client is associated with exactly
@@ -67,6 +70,19 @@ typedef void(^CDASpaceFetchedBlock)(CDAResponse* response, CDASpace* space);
         configuration:(CDAConfiguration*)configuration;
 
 /** @name Fetching Assets */
+
+/**
+ *  Fetch all Assets matching a query from the server.
+ *
+ *  @param query   The query which retrieved Assets shall match. Queries are expressed as dictionaries,
+ *                 see [Search Parameters](https://www.contentful.com/developers/documentation/content-delivery-api/#search) for more information.
+ *  @param success A block which gets called upon successful retrieval of all matching Assets.
+ *  @param failure A block which gets called if an error occured during the retrieval process.
+ *  @return The request used for fetching data.
+ */
+-(CDARequest*)fetchAssetsMatching:(NSDictionary*)query
+                          success:(CDAArrayFetchedBlock)success
+                          failure:(CDARequestFailureBlock)failure;
 
 /**
  *  Fetch all Assets from the server.
@@ -200,7 +216,61 @@ typedef void(^CDASpaceFetchedBlock)(CDAResponse* response, CDASpace* space);
                       success:(void (^)(NSArray* items))success
                       failure:(CDARequestFailureBlock)failure;
 
+/** @name Synchronization */
+
+/**
+ *  Perform the initial synchronization of a Space.
+ *
+ *  A `CDASyncedSpace` instance will be available once the initial synchronization is done.
+ *  Subsequent updates can be done using that object.
+ *
+ *  Using this method, a complete synchronization of all
+ *  [pages](https://www.contentful.com/developers/documentation/content-delivery-api/#sync-example-next-page)
+ *  will be performed, which means that all data from the Space will be in memory.
+ *
+ *  @param success A block which gets called upon successful retrieval of all content.
+ *  @param failure A block which gets called if an error occured during the retrieval process.
+ *
+ *  @return The request used for fetching data.
+ */
+-(CDARequest*)initialSynchronizationWithSuccess:(CDASyncedSpaceFetchedBlock)success
+                                        failure:(CDARequestFailureBlock)failure;
+
+/**
+ *  Perform the initial synchronization of a Space.
+ *
+ *  A `CDASyncedSpace` instance will be available once the initial synchronization is done.
+ *  Subsequent updates can be done using that object.
+ *
+ *  Using this method, a complete synchronization of all
+ *  [pages](https://www.contentful.com/developers/documentation/content-delivery-api/#sync-example-next-page)
+ *  will be performed, which means that all data from the Space will be in memory.
+ *
+ *  @param query   The query which retrieved Resources shall match. Queries are expressed as
+ *                 dictionaries, see [Syncing Specific Content](https://www.contentful.com/developers/documentation/content-delivery-api/javascript/#sync-types) for more information. If `nil`, any Resource matches.
+ *  @param success A block which gets called upon successful retrieval of all content.
+ *  @param failure A block which gets called if an error occured during the retrieval process.
+ *
+ *  @return The request used for fetching data.
+ */
+-(CDARequest*)initialSynchronizationMatching:(NSDictionary*)query
+                                     success:(CDASyncedSpaceFetchedBlock)success
+                                     failure:(CDARequestFailureBlock)failure;
+
 /** @name Register classes for custom value objects */
+
+/**
+ *  This method allows registering custom CDAEntry subclasses when Entries of a specific Content Type
+ *  are retrieved from the server.
+ *
+ *  This allows the integration of custom value objects with convenience accessors, additional
+ *  conversions or custom functionality so that you can easily build your data model upon Entries.
+ *
+ *  @param customClass The CDAEntry subclass which should be instantiated for Entries of the given
+ *                     Content Type.
+ *  @param contentType The Content Type for which custom value objects should be created.
+ */
+-(void)registerClass:(Class)customClass forContentType:(CDAContentType *)contentType;
 
 /**
  *  This method allows registering custom CDAEntry subclasses when Entries of a specific Content Type

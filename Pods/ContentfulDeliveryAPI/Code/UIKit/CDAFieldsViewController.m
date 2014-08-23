@@ -103,20 +103,50 @@
     }
 }
 
--(id)initWithEntry:(CDAEntry*)entry {
-    self = [super initWithStyle:UITableViewStyleGrouped];
+-(id)initWithEntry:(CDAEntry *)entry {
+    self = [self initWithEntry:entry tableViewStyle:UITableViewStyleGrouped];
+    return self;
+}
+
+-(id)initWithEntry:(CDAEntry*)entry tableViewStyle:(UITableViewStyle)style {
+    self = [super initWithStyle:style];
     if (self) {
         self.entry = entry;
-        self.title = entry.fields[entry.contentType.displayField];
+
+        switch ([entry.contentType fieldForIdentifier:entry.contentType.displayField].type) {
+            case CDAFieldTypeText:
+            case CDAFieldTypeSymbol:
+                self.title = entry.fields[entry.contentType.displayField];
+                break;
+
+            case CDAFieldTypeInteger:
+            case CDAFieldTypeBoolean:
+            case CDAFieldTypeNumber:
+                self.title = [entry.fields[entry.contentType.displayField] stringValue];
+                break;
+
+            default:
+                break;
+        }
         
-        self.fields = self.entry.contentType.fields;
+        NSMutableArray* fields = [@[] mutableCopy];
+        
+        for (CDAField* field in self.entry.contentType.fields) {
+            if (!field.disabled) {
+                [fields addObject:field];
+            }
+        }
+        
+        self.fields = [fields copy];
         
         if (self.visibleFields) {
             NSMutableArray* fields = [@[] mutableCopy];
             
-            for (NSString* field in self.visibleFields) {
-                if ([self.fields containsObject:field]) {
-                    [fields addObject:field];
+            for (NSString* visibleField in self.visibleFields) {
+                for (CDAField* field in self.fields) {
+                    if ([field.identifier isEqualToString:visibleField]) {
+                        [fields addObject:field];
+                    }
                 }
             }
             
@@ -139,7 +169,9 @@
     
     if ([resource isKindOfClass:[CDAEntry class]]) {
         CDAEntry* entry = (CDAEntry*)resource;
-        cellMapping = @{ @"textLabel.text": [@"fields." stringByAppendingString:entry.contentType.displayField] };
+        if (entry.contentType.displayField) {
+            cellMapping = @{ @"textLabel.text": [@"fields." stringByAppendingString:entry.contentType.displayField] };
+        }
     }
     
     CDAEntriesViewController* entriesVC = [[CDAEntriesViewController alloc]
@@ -175,7 +207,7 @@
         return nil;
     }
     
-    NSString* fieldIdentifier = self.fields[indexPath.row];
+    NSString* fieldIdentifier = [self.fields[indexPath.row] identifier];
     
     CDAFieldCell* cell = [tableView dequeueReusableCellWithIdentifier:NSStringFromClass([self class])
                                                          forIndexPath:indexPath];

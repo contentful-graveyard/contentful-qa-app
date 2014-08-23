@@ -36,6 +36,22 @@
 /** The Entry's Content Type. */
 @property (nonatomic, readonly) CDAContentType* contentType;
 
+/** @name Accessing Localized Content */
+
+/**
+ *  Locale to be used for accessing any values of `fields`.
+ *
+ *  By default, this will be set to the Space's default locale. If set to a non-existing locale, it
+ *  will automatically revert to the default value. 
+ *
+ *  Changing this property only has an effect if the receiver was obtained from a `CDASyncedSpace`
+ *  originally. Entries obtained any other way will only contain values for the locale specified in 
+ *  the query or for the default locale. In addition to that, this properties value will also only
+ *  be accurate for Entries obtained from a `CDASyncedSpace`originally.
+ *
+ */
+@property (nonatomic) NSString* locale;
+
 /** @name Handle custom objects */
 
 /**
@@ -43,10 +59,11 @@
  *  supposed to map a keypath on this Entry to a keypath on `object`.
  *
  *  This can be used as a quick way to fill your own value objects with data from Entries fetched 
- *  from the Contentful API, e.g. if you want to use CoreData in your app. 
+ *  from the Contentful API, e.g. if you want to use Core Data in your app.
  *
  *  Currently, this method does no conversion or error checking on top of what is already provided by
- *  Key-Value-Coding.
+ *  Key-Value-Coding. However, it will skip all relations to other Resources, because those will
+ *  likely need special behaviour.
  *
  *  Example:
  *

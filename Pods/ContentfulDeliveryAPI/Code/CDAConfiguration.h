@@ -26,17 +26,29 @@
 
 /** If `YES`, a secure HTTPS connection will be used instead of regular HTTP. Default value: `YES` */
 @property (nonatomic) BOOL secure;
-/** The server address to use for accessing any resources. Default value: "http://cdn.contentful.com" */
+/** The server address to use for accessing any resources. Default value: "cdn.contentful.com" */
 @property (nonatomic) NSString* server;
 
 /** @name Configure Preview Mode */
 
-/** Preview mode allows retrieving unpublished Resources. To use it, you have to obtain a special access
- token from [here](https://www.contentful.com/developers/documentation/content-management-api/#getting-started). */
+/** Preview mode allows retrieving unpublished Resources. 
+ 
+ To use it, you have to obtain a special access
+ token from [here](https://www.contentful.com/developers/documentation/content-management-api/#getting-started). 
+ 
+ In preview mode, data can be invalid, because no validation is performed on unpublished entries. Your
+ app needs to deal with that. Be aware that the access token is read-write and should in no case be
+ shipped with a production app.
+ 
+ Another difference in preview mode is that there are never any updates when performing 
+ synchronizations. You will receive all Assets and Entries during the initial synchronization, just as
+ in normal mode, including the unpublished Resources. Any subsequent synchronization will return 
+ successful immediately, not reporting any changes. In addition to that, the parameters for syncing
+ specific content will have no effect in preview mode, instead all content will always be fetched.
+ 
+ In preview mode, the `include` parameter of a query is not used at all, instead includes will always
+ be resolved for full ten levels. Because of this, preview mode will be slower than normal.
+ */
 @property (nonatomic) BOOL previewMode;
-
-/** In preview mode, the default locale of the Space is not used. If there is more than one locale in
- the Space you are using, this property needs to be set or an exception will be thrown at runtime. */
-@property (nonatomic) NSString* previewLocale;
 
 @end
