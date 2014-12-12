@@ -4,6 +4,8 @@ Noting how difficult it is to develop mobile apps for services relying on multip
 
 The app works on iOS 7 and uses the [Contentful iOS SDK][2].
 
+**This app was made during an internal hackathon and is not officially supported.**
+
 [Contentful][1] is a content management platform for web applications, mobile apps and connected devices. It allows you to create, edit & manage content in the cloud and publish it anywhere via powerful API. Contentful offers tools for managing editorial teams and enabling cooperation between organizations.
 
 [1]: https://www.contentful.com
