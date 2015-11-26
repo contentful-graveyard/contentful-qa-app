@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		260B1B2E25714E00BC9A877D /* libPods-Q&A.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F4E8C339F334ADAA0C40419 /* libPods-Q&A.a */; };
+		6EE7F01DBDB56FD048FC531C /* libPods-Q&A.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F115FE2F768E87FF1C27C9B7 /* libPods-Q&A.a */; };
 		A12797A918E1A97100043A44 /* QAInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A12797A818E1A97100043A44 /* QAInfoViewController.m */; };
 		A173F5AB18D9E027000E6F92 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A173F5AA18D9E027000E6F92 /* Foundation.framework */; };
 		A173F5AD18D9E027000E6F92 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A173F5AC18D9E027000E6F92 /* CoreGraphics.framework */; };
@@ -21,8 +21,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0F4E8C339F334ADAA0C40419 /* libPods-Q&A.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Q&A.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		3671E794DEAC4655A57A1514 /* Pods-Q&A.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Q&A.xcconfig"; path = "Pods/Pods-Q&A.xcconfig"; sourceTree = "<group>"; };
+		049A212FAA081C5D13563B59 /* Pods-Q&A.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Q&A.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Q&A/Pods-Q&A.debug.xcconfig"; sourceTree = "<group>"; };
+		555F30D4AFB768B6978D9DFA /* Pods-Q&A.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Q&A.release.xcconfig"; path = "Pods/Target Support Files/Pods-Q&A/Pods-Q&A.release.xcconfig"; sourceTree = "<group>"; };
 		A12797A718E1A97100043A44 /* QAInfoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QAInfoViewController.h; sourceTree = "<group>"; };
 		A12797A818E1A97100043A44 /* QAInfoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QAInfoViewController.m; sourceTree = "<group>"; };
 		A173F5A718D9E027000E6F92 /* Q&A.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Q&A.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -42,6 +42,7 @@
 		A173F5F518D9E9C7000E6F92 /* QAQuestionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QAQuestionViewController.m; sourceTree = "<group>"; };
 		A173F5F718D9ED76000E6F92 /* QAEntriesViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QAEntriesViewController.h; sourceTree = "<group>"; };
 		A173F5F818D9ED76000E6F92 /* QAEntriesViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QAEntriesViewController.m; sourceTree = "<group>"; };
+		F115FE2F768E87FF1C27C9B7 /* libPods-Q&A.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Q&A.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,22 +53,31 @@
 				A173F5AD18D9E027000E6F92 /* CoreGraphics.framework in Frameworks */,
 				A173F5AF18D9E027000E6F92 /* UIKit.framework in Frameworks */,
 				A173F5AB18D9E027000E6F92 /* Foundation.framework in Frameworks */,
-				260B1B2E25714E00BC9A877D /* libPods-Q&A.a in Frameworks */,
+				6EE7F01DBDB56FD048FC531C /* libPods-Q&A.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		61D5A1DE71385BC2095E2C09 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				049A212FAA081C5D13563B59 /* Pods-Q&A.debug.xcconfig */,
+				555F30D4AFB768B6978D9DFA /* Pods-Q&A.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 		A173F59E18D9E027000E6F92 = {
 			isa = PBXGroup;
 			children = (
 				A173F5B018D9E027000E6F92 /* Code */,
 				A173F5A918D9E027000E6F92 /* Frameworks */,
+				61D5A1DE71385BC2095E2C09 /* Pods */,
 				A173F5A818D9E027000E6F92 /* Products */,
 				A173F5D918D9E042000E6F92 /* Resources */,
 				A173F5B118D9E027000E6F92 /* Supporting Files */,
-				3671E794DEAC4655A57A1514 /* Pods-Q&A.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -86,7 +96,7 @@
 				A173F5AC18D9E027000E6F92 /* CoreGraphics.framework */,
 				A173F5AE18D9E027000E6F92 /* UIKit.framework */,
 				A173F5C318D9E027000E6F92 /* XCTest.framework */,
-				0F4E8C339F334ADAA0C40419 /* libPods-Q&A.a */,
+				F115FE2F768E87FF1C27C9B7 /* libPods-Q&A.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -134,11 +144,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A173F5D318D9E027000E6F92 /* Build configuration list for PBXNativeTarget "Q&A" */;
 			buildPhases = (
-				B432784EE38C489D824D0513 /* Check Pods Manifest.lock */,
+				B332890F01B48B618FC50EA3 /* Check Pods Manifest.lock */,
 				A173F5A318D9E027000E6F92 /* Sources */,
 				A173F5A418D9E027000E6F92 /* Frameworks */,
 				A173F5A518D9E027000E6F92 /* Resources */,
-				AE17644651294382962409AA /* Copy Pods Resources */,
+				BA9D6E35A7212D6A79A1296F /* Embed Pods Frameworks */,
+				BE6FBBDDC5911D2A1D72C6C2 /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -193,22 +204,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		AE17644651294382962409AA /* Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Pods-Q&A-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		B432784EE38C489D824D0513 /* Check Pods Manifest.lock */ = {
+		B332890F01B48B618FC50EA3 /* Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -221,6 +217,36 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		BA9D6E35A7212D6A79A1296F /* Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Q&A/Pods-Q&A-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		BE6FBBDDC5911D2A1D72C6C2 /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Q&A/Pods-Q&A-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -315,7 +341,7 @@
 		};
 		A173F5D418D9E027000E6F92 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3671E794DEAC4655A57A1514 /* Pods-Q&A.xcconfig */;
+			baseConfigurationReference = 049A212FAA081C5D13563B59 /* Pods-Q&A.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -335,7 +361,7 @@
 		};
 		A173F5D518D9E027000E6F92 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3671E794DEAC4655A57A1514 /* Pods-Q&A.xcconfig */;
+			baseConfigurationReference = 555F30D4AFB768B6978D9DFA /* Pods-Q&A.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;

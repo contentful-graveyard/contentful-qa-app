@@ -116,6 +116,9 @@
             case CDAFieldTypeBoolean:
             case CDAFieldTypeLocation:
             case CDAFieldTypeNone:
+            case CDAFieldTypeObject:
+            case CDAFieldTypeAsset:
+            case CDAFieldTypeEntry:
                 break;
         }
     }

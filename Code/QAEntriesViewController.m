@@ -30,7 +30,7 @@
 }
 
 -(id)init {
-    self = [super initWithCellMapping:nil];
+    self = [super initWithCellMapping:@{}];
     if (self) {
         self.apiClient = [[CDAClient alloc] initWithSpaceKey:@"id73wx4ydrgy" accessToken:@"89d01e01d7f92390a7196d60f1780293051bf0cf70f172b2fe73c4096af6f7a4"];
         
