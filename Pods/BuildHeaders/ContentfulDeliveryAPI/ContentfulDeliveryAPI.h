@@ -1,1 +1,0 @@
-../../ContentfulDeliveryAPI/Code/ContentfulDeliveryAPI.h

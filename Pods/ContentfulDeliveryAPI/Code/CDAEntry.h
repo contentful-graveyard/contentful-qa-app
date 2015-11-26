@@ -6,10 +6,14 @@
 //
 //
 
+@import MapKit;
+
+#import <ContentfulDeliveryAPI/CDANullabilityStubs.h>
 #import <ContentfulDeliveryAPI/CDAResource.h>
-#import <MapKit/MapKit.h>
 
 @class CDAContentType;
+
+NS_ASSUME_NONNULL_BEGIN
 
 /** 
  Entries represent textual content in a Space. An Entry's data adheres to a certain Content Type.
@@ -34,7 +38,7 @@
 /** @name Accessing Content Types */
 
 /** The Entry's Content Type. */
-@property (nonatomic, readonly) CDAContentType* contentType;
+@property (nonatomic, readonly) CDAContentType* __nullable contentType;
 
 /** @name Accessing Localized Content */
 
@@ -78,3 +82,5 @@
 -(id)mapFieldsToObject:(NSObject*)object usingMapping:(NSDictionary*)dictionary;
 
 @end
+
+NS_ASSUME_NONNULL_END

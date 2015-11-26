@@ -1,1 +1,0 @@
-PODS_Q_A_BYPASS_OTHER_LDFLAGS = -lstdc++ -framework CoreGraphics -framework CoreText -framework Foundation -framework QuartzCore -framework UIKit

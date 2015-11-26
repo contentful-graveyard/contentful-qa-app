@@ -6,12 +6,14 @@
 //
 //
 
+@import MapKit;
+
 #import <ISO8601DateFormatter/ISO8601DateFormatter.h>
-#import <MapKit/MapKit.h>
 
 #import "CDAClient+Private.h"
 #import "CDAFieldValueTransformer.h"
 #import "CDAResource+Private.h"
+#import "CDAUtilities.h"
 
 @interface CDAFieldValueTransformer ()
 
@@ -99,7 +101,9 @@
             }
             
             return value;
-            
+
+        case CDAFieldTypeAsset:
+        case CDAFieldTypeEntry:
         case CDAFieldTypeLink:
             if (value == [NSNull null]) {
                 return nil;
@@ -128,8 +132,8 @@
                 }
                 return [value stringValue];
             }
-            
-        default:
+
+        case CDAFieldTypeNone:
             break;
     }
     

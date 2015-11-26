@@ -7,9 +7,12 @@
 //
 
 #import <ContentfulDeliveryAPI/CDAClient.h>
+#import <ContentfulDeliveryAPI/CDALocalizedPersistedEntry.h>
 #import <ContentfulDeliveryAPI/CDAPersistedAsset.h>
 #import <ContentfulDeliveryAPI/CDAPersistedEntry.h>
 #import <ContentfulDeliveryAPI/CDAPersistedSpace.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  *  Subclasses of this class manage a persistent store.
@@ -30,7 +33,7 @@
 *
 *  @return An initialized `CDAPersistenceManager` or `nil` if the object couldn't be created.
 */
--(id)initWithClient:(CDAClient*)client;
+-(id __nullable)initWithClient:(CDAClient*)client;
 
 /**
  *  Initializes a new `CDAPersistenceManager` object. Using this initializer will use queries for
@@ -41,7 +44,7 @@
  *
  *  @return An initialized `CDAPersistenceManager` or `nil` if the object couldn't be created.
  */
--(id)initWithClient:(CDAClient *)client query:(NSDictionary*)query;
+-(id __nullable)initWithClient:(CDAClient *)client query:(NSDictionary*)query;
 
 /** @name Performing Synchronizations */
 
@@ -68,7 +71,16 @@
  *
  *  @return Class to be used for Entries of that Content Type.
  */
--(Class)classForEntriesOfContentTypeWithIdentifier:(NSString*)identifier;
+-(Class __nullable)classForEntriesOfContentTypeWithIdentifier:(NSString*)identifier;
+
+/**
+ *  Class used for localized persisted Entries of a certain Content Type.
+ *
+ *  @param identifier Identifier of the Content Type.
+ *
+ *  @return Class to be used for localized Entries of that Content Type.
+ */
+-(Class __nullable)classForLocalizedEntriesOfContentTypeWithIdentifier:(NSString*)identifier;
 
 /** List of identifiers of all Content Types for which a class was defined. */
 @property (nonatomic, readonly) NSArray* identifiersOfHandledContentTypes;
@@ -82,16 +94,36 @@
  */
 -(void)setClass:(Class)classForEntries forEntriesOfContentTypeWithIdentifier:(NSString*)identifier;
 
+/**
+ *  Class to be used for localized persisted Entries of a certain Content Type. Entries for which
+ *  no class was defined will not be persisted to the data store.
+ *
+ *  @param classForEntries Class to be used for localized Entries of the given Content Type.
+ *  @param identifier      Identifier of the Content Type.
+ */
+-(void)setClass:(Class)classForEntries forLocalizedEntriesOfContentTypeWithIdentifier:(NSString*)identifier;
+
 /** @name Mapping Fields to Properties */
 
 /**
  Get the mapping between the properties of persistent Resources and the Fields of Resources
  retrieved from Contentful.
  
+ Note: If the property names on persisted Entries match the field identifiers on Contentful, the 
+ mapping can be provided automatically and you do not need to call this method.
+ 
  @param identifier Identifier of the Content Type in question.
  @return The defined mapping for Fields of Entries of the given Content Type.
  */
 -(NSDictionary*)mappingForEntriesOfContentTypeWithIdentifier:(NSString*)identifier;
+
+/**
+ Get all defined properties of the persited Entry class of a certain Content Type.
+
+ @param identifier      Identifier of the Content Type.
+ @return List of properties which are defined on the relevant persisted Entry class.
+ */
+-(NSArray*)propertiesForEntriesOfContentTypeWithIdentifier:(NSString*)identifier;
 
 /**
  *  Set the mapping between the properties of persistent Resources and the Fields of Resources
@@ -112,12 +144,20 @@
 -(id<CDAPersistedAsset>)createPersistedAsset;
 
 /**
+ *  Override this method in subclasses if localized Entry instances cannot be created with +new.
+ *
+ *  @param identifier Identifier of the Content Type of the new localized Entry.
+ *  @return A new persisted Entry.
+ */
+-(id<CDALocalizedPersistedEntry> __nullable)createLocalizedPersistedEntryForContentTypeWithIdentifier:(NSString*)identifier;
+
+/**
  *  Override this method in subclasses if Entry instances cannot be created with +new.
  *
  *  @param identifier Identifier of the Content Type of the new Entry.
  *  @return A new persisted Entry.
  */
--(id<CDAPersistedEntry>)createPersistedEntryForContentTypeWithIdentifier:(NSString*)identifier;
+-(id<CDAPersistedEntry> __nullable)createPersistedEntryForContentTypeWithIdentifier:(NSString*)identifier;
 
 /**
  *  Override this method in subclasses if Space instances cannot be created with +new.
@@ -134,6 +174,15 @@
  *  @param identifier The identifier of the Asset to delete.
  */
 -(void)deleteAssetWithIdentifier:(NSString*)identifier;
+
+/**
+ *  Delete a localized Entry from the persisten store.
+ *
+ *  This method needs to be overridden by subclasses.
+ *
+ *  @param identifier The identifier of the localized Entry to delete.
+ */
+-(void)deleteLocalizedEntryWithIdentifier:(NSString*)identifier;
 
 /**
  *  Delete an Entry from the persisten store.
@@ -160,7 +209,14 @@
  *
  *  @return The Asset with the given identifier or `nil` if it could not be found.
  */
--(id<CDAPersistedAsset>)fetchAssetWithIdentifier:(NSString*)identifier;
+-(id<CDAPersistedAsset> __nullable)fetchAssetWithIdentifier:(NSString*)identifier;
+
+/**
+ *  Fetch all Entries from the store.
+ *
+ *  @return An array of all Entries.
+ */
+-(NSArray*)fetchEntriesFromDataStore;
 
 /**
  *  Retrieve an Entry from the persistent store.
@@ -171,7 +227,20 @@
  *
  *  @return The Entry with the given identifier or `nil` if it could not be found.
  */
--(id<CDAPersistedEntry>)fetchEntryWithIdentifier:(NSString*)identifier;
+-(id<CDAPersistedEntry> __nullable)fetchEntryWithIdentifier:(NSString*)identifier;
+
+/**
+ *  Retrieve a localized Entry from the persistent store.
+ *
+ *  This method needs to be overridden by subclasses.
+ *
+ *  @param identifier The identifier of the Entry to fetch.
+ *  @param locale     The locale of the Entry to fetch.
+ *
+ *  @return The localized Entry with the given identifier or `nil` if it could not be found.
+ */
+-(id<CDALocalizedPersistedEntry> __nullable)fetchLocalizedEntryWithIdentifier:(NSString*)identifier
+                                                                       locale:(NSString*)locale;
 
 /**
  *  Fetch a Space from the persistent store.
@@ -180,7 +249,14 @@
  *
  *  @return The fetched Space or `nil` if none could be retrieved.
  */
--(id<CDAPersistedSpace>)fetchSpaceFromDataStore;
+-(id<CDAPersistedSpace> __nullable)fetchSpaceFromDataStore;
+
+/**
+ *  Whether any data has changed since the last synchronization.
+ *
+ *  @return True if any changes occured, false otherwise.
+ */
+-(BOOL)hasChanged;
 
 /**
  *  Save all changes of the object model to the persistent store.
@@ -216,3 +292,5 @@
 +(void)seedFromBundleWithInitialCacheDirectory:(NSString*)initialCacheDirectory;
 
 @end
+
+NS_ASSUME_NONNULL_END

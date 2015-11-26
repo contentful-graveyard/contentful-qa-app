@@ -20,7 +20,9 @@
 
 +(instancetype)defaultConfiguration {
     CDAConfiguration* configuration = [CDAConfiguration new];
+    configuration.filterNonExistingResources = NO;
     configuration.previewMode = NO;
+    configuration.rateLimiting = NO;
     configuration.secure = YES;
     configuration.server = @"cdn.contentful.com";
     return configuration;
@@ -36,7 +38,7 @@
     _previewMode = previewMode;
     
     if (previewMode) {
-        self.server = @"api.contentful.com";
+        self.server = @"preview.contentful.com";
     }
 }
 

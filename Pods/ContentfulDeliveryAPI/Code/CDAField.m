@@ -6,7 +6,7 @@
 //
 //
 
-#import <objc/runtime.h>
+@import ObjectiveC.runtime;
 
 #import <ContentfulDeliveryAPI/CDAResource.h>
 
@@ -53,7 +53,17 @@
             rep[@"linkType"] = [self fieldTypeToString:self.type];
             break;
 
-        default:
+        case CDAFieldTypeArray:
+        case CDAFieldTypeBoolean:
+        case CDAFieldTypeDate:
+        case CDAFieldTypeInteger:
+        case CDAFieldTypeLink:
+        case CDAFieldTypeLocation:
+        case CDAFieldTypeNone:
+        case CDAFieldTypeNumber:
+        case CDAFieldTypeObject:
+        case CDAFieldTypeSymbol:
+        case CDAFieldTypeText:
             rep[@"type"] = [self fieldTypeToString:self.type];
             break;
     }
@@ -63,10 +73,23 @@
             break;
         case CDAFieldTypeAsset:
         case CDAFieldTypeEntry:
-            rep[@"items"] = @{ @"type": [self fieldTypeToString:CDAFieldTypeLink],
-                               @"linkType": [self fieldTypeToString:self.itemType] };
+            if (self.type == CDAFieldTypeLink) {
+                rep[@"linkType"] = [self fieldTypeToString:self.itemType];
+            } else {
+                rep[@"items"] = @{ @"type": [self fieldTypeToString:CDAFieldTypeLink],
+                                   @"linkType": [self fieldTypeToString:self.itemType] };
+            }
             break;
-        default:
+        case CDAFieldTypeArray:
+        case CDAFieldTypeBoolean:
+        case CDAFieldTypeDate:
+        case CDAFieldTypeInteger:
+        case CDAFieldTypeLink:
+        case CDAFieldTypeLocation:
+        case CDAFieldTypeNumber:
+        case CDAFieldTypeObject:
+        case CDAFieldTypeSymbol:
+        case CDAFieldTypeText:
             rep[@"items"] = @{ @"type": [self fieldTypeToString:self.itemType] };
             break;
     }
@@ -119,14 +142,21 @@
         NSParameterAssert(client);
         self.client = client;
         
-        self.identifier = dictionary[@"id"];
+        if (dictionary[@"id"]) {
+            NSString* identifier = dictionary[@"id"];
+            self.identifier = identifier;
+        } else {
+            [NSException raise:NSInvalidArgumentException format:@"Fields need an identifier"];
+        }
+
         self.name = dictionary[@"name"];
         
-        NSString* itemType = dictionary[@"items"][@"type"];
+        NSString* itemType = dictionary[@"items"][@"linkType"] ?: dictionary[@"linkType"];
         if (itemType) {
             self.itemType = [self stringToFieldType:itemType];
         } else {
-            self.itemType = CDAFieldTypeNone;
+            itemType = dictionary[@"items"][@"type"];
+            self.itemType = itemType ? [self stringToFieldType:itemType] : CDAFieldTypeNone;
         }
         
         self.type = [self stringToFieldType:dictionary[@"type"]];

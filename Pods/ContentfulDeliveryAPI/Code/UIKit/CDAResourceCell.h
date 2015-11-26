@@ -6,7 +6,11 @@
 //
 //
 
-#import <UIKit/UIKit.h>
+@import UIKit;
+
+#import <ContentfulDeliveryAPI/CDANullabilityStubs.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 /** UICollectionViewCell subclass for displaying Resources. */
 @interface CDAResourceCell : UICollectionViewCell
@@ -22,3 +26,5 @@
 @property (nonatomic) NSURL* imageURL;
 
 @end
+
+NS_ASSUME_NONNULL_END

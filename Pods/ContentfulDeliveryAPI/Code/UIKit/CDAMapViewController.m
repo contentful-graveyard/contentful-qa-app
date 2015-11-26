@@ -6,8 +6,9 @@
 //
 //
 
+@import MapKit;
+
 #import <ContentfulDeliveryAPI/ContentfulDeliveryAPI.h>
-#import <MapKit/MapKit.h>
 
 #import "CDAMapViewController.h"
 #import "CDAUtilities.h"
@@ -15,6 +16,7 @@
 @interface CDAMapAnnotation : NSObject <MKAnnotation>
 
 @property (nonatomic) CLLocationCoordinate2D coordinate;
+@property (nonatomic) NSString* identifier;
 @property (nonatomic, copy) NSString* subtitle;
 @property (nonatomic, copy) NSString* title;
 
@@ -25,6 +27,7 @@
 @implementation CDAMapAnnotation
 
 @synthesize coordinate = _coordinate;
+@synthesize identifier = _identifier;
 @synthesize subtitle = _subtitle;
 @synthesize title = _title;
 
@@ -68,20 +71,30 @@
     }
 }
 
+-(NSArray *)items {
+    return self.entries.items;
+}
+
 -(void)refresh {
+    [self.mapView removeAnnotations:self.mapView.annotations];
+
     for (CDAEntry* entry in self.entries.items) {
         CDAMapAnnotation* annotation = [CDAMapAnnotation new];
+        annotation.identifier = entry.identifier;
         
         if (self.coordinateFieldIdentifier) {
-            annotation.coordinate = [entry CLLocationCoordinate2DFromFieldWithIdentifier:self.coordinateFieldIdentifier];
+            NSString* identifier = self.coordinateFieldIdentifier;
+            annotation.coordinate = [entry CLLocationCoordinate2DFromFieldWithIdentifier:identifier];
         }
         
         if (self.subtitleFieldIdentifier) {
-            annotation.subtitle = entry.fields[self.subtitleFieldIdentifier];
+            NSString* subtitleFieldIdentifier = self.subtitleFieldIdentifier;
+            annotation.subtitle = entry.fields[subtitleFieldIdentifier];
         }
         
         if (self.titleFieldIdentifier) {
-            annotation.title = entry.fields[self.titleFieldIdentifier];
+            NSString* titleFieldIdentifier = self.titleFieldIdentifier;
+            annotation.title = entry.fields[titleFieldIdentifier];
         }
         
         [self.mapView addAnnotation:annotation];
@@ -113,9 +126,12 @@
                                   [self handleCaching];
                               }
                               failure:^(CDAResponse *response, NSError *error) {
-                                  if (CDAIsNoNetworkError(error)) {
+                                  CDAClient* client = self.client;
+                                  NSParameterAssert(client);
+
+                                  if (CDAIsNoNetworkError(error) && client) {
                                       self.entries = [CDAArray readFromFile:self.cacheFileName
-                                                                     client:self.client];
+                                                                     client:client];
                                       
                                       [self refresh];
                                       return;

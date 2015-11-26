@@ -3,8 +3,8 @@
 [![Version](https://img.shields.io/cocoapods/v/ContentfulDeliveryAPI.svg?style=flat)](http://cocoadocs.org/docsets/ContentfulDeliveryAPI)
 [![License](https://img.shields.io/cocoapods/l/ContentfulDeliveryAPI.svg?style=flat)](http://cocoadocs.org/docsets/ContentfulDeliveryAPI)
 [![Platform](https://img.shields.io/cocoapods/p/ContentfulDeliveryAPI.svg?style=flat)](http://cocoadocs.org/docsets/ContentfulDeliveryAPI)
-[![Build Status](http://img.shields.io/travis/contentful/contentful.objc.svg?style=flat)](https://travis-ci.org/contentful/contentful.objc)
-[![Coverage Status](https://img.shields.io/coveralls/contentful/contentful.objc.svg)](https://coveralls.io/r/contentful/contentful.objc?branch=master)
+[![Build Status](https://img.shields.io/travis/contentful/contentful.objc/master.svg?style=flat)](https://travis-ci.org/contentful/contentful.objc)
+[![Coverage Status](https://img.shields.io/coveralls/contentful/contentful.objc.svg)](https://coveralls.io/github/contentful/contentful.objc)
 
 Objective-C SDK for [Contentful's][1] Content Delivery API.
 
@@ -63,9 +63,9 @@ All Resource classes support `NSCoding` and bring convenience methods for storin
 CDAEntry* readEntry = [CDAEntry readFromFile:@"/some/path" client:client];
 ```
 
-The helper methods use [HRCoder][11] internally, to account for the possibility of circular links between Entries. Most of the UIKit extensions have an `offlineCaching` property which transparently uses this mechanism for showing content when offline.
+Most of the UIKit extensions have an `offlineCaching` property which transparently uses this mechanism for showing content when offline.
 
-If you rather use another solution, there is the abstract `CDAPersistenceManager` class with a [sample implementation](https://github.com/contentful/contentful.objc/blob/master/Code/CoreData/CoreDataManager.m) for Core Data. It supports mapping Resources to another method for managing your object graph easily and ties this to the Contentful synchronization API. Check out the Core Data example app for integrating it yourself.
+If you rather use another solution, there is the abstract `CDAPersistenceManager` class with a [sample implementation](https://github.com/contentful/contentful-persistence.objc/blob/master/Code/CoreDataManager.m) for Core Data. It supports mapping Resources to another method for managing your object graph easily and ties this to the Contentful synchronization API. Check out the Core Data example app for integrating it yourself.
 
 In both cases, you can use the `offlineCaching_cda` property of the SDK's `UIImageView` category to make any image view transparently cache its contents in a flat file on disk. This will only cache images that the user has viewed once while the app was online.
 
@@ -82,11 +82,11 @@ CDAClient* client = [[CDAClient alloc] initWithSpaceKey:@"YourSpaceKey"
                                           configuration:configuration];
 ```
 
-Apart from the configuration option, you can use the SDK without modifications with one exception: you need to obtain a different access token from [here][10].  In preview mode, data can be invalid, because no validation is performed on unpublished entries. Your app needs to deal with that. Be aware that the access token is read-write and should in no case be shipped with a production app.
+Apart from the configuration option, you can use the SDK without modifications with one exception: you need to obtain a preview access token, which you can get in the "API" tab of the Contentful app. In preview mode, data can be invalid, because no validation is performed on unpublished entries. Your app needs to deal with that. Be aware that the access token should in no case be shipped with a production app.
 
 ### UIKit Extensions
 
-The SDK contains some extensions of UIKit classes for common use cases. You can see a lot of them in action in the examples or read [this blog post][12] with details on some of them.
+The SDK contains some extensions of UIKit classes for common use cases. You can see a lot of them in action in the examples or read [this blog post][11] with details on some of them.
 
 ## Documentation
 
@@ -105,17 +105,25 @@ pod 'ContentfulDeliveryAPI'
 
 This is the easiest way to keep your copy of the Contentful Delivery API updated.
 
+For Swift support using iOS 8, you can enable framework support usage in [CocoaPods][2]:
+
+```ruby
+platform :ios, '8.0'
+use_frameworks!
+pod 'ContentfulDeliveryAPI'
+```
+
 ### Manual integration
 
 In the case you prefer to manage your dependencies manually, you can just drag all files from the `Code` subdirectory into your project or integrate the `ContentfulDeliveryAPI` static library target into your build process. It might be a good idea to add this repository as a [Git submodule][5] if you choose this path.
 
-Be aware that the Contentful Delivery API requires both [AFNetworking][3], [HRCoder][11] and [ISO8601DateFormatter][4] to compile successfully, so you need to provide these dependencies if you do manual integration.
+Be aware that the Contentful Delivery API requires both [AFNetworking][3] and [ISO8601DateFormatter][4] to compile successfully, so you need to provide these dependencies if you do manual integration.
 
 ### Static Framework
 
 You can [download][8] the Contentful Delivery API as an universal static framework for iOS. Integrate it into your project by unzipping and dragging the `ContentfulDeliveryAPI.framework` into the `Frameworks` group of your project. You can also [download][9] the UFO example application including the static framework, as an example of integrating it into an Xcode project.
 
-The static framework contains [AFNetworking][3], [HRCoder][11] and [ISO8601DateFormatter][4], so beware of linker errors if you already have those libraries in your project. If this is the case, you should use another method of installation.
+The static framework contains [AFNetworking][3] and [ISO8601DateFormatter][4], but they are prefixed so that they do not clash with any copies that might already be part of your application.
 
 It depends on the `SystemConfiguration.framework` not included by default in iOS projects, so open your project file on the `General` tab.
 
@@ -144,19 +152,16 @@ or run them directly from Xcode.
 
 ## License
 
-Copyright (c) 2014 Contentful GmbH. See LICENSE for further details.
-
+Copyright (c) 2014, 2015 Contentful GmbH. See LICENSE for further details.
 
 
 [1]: https://www.contentful.com
-[2]: http://www.cocoapods.org
-[3]: http://www.afnetworking.com
+[2]: https://cocoapods.org/
+[3]: https://github.com/AFNetworking/AFNetworking
 [4]: http://boredzo.org/iso8601dateformatter/
 [5]: http://git-scm.com/docs/git-submodule
-[6]: https://www.contentful.com/developers/documentation/content-delivery-api/
-[7]: http://cocoadocs.org/docsets/ContentfulDeliveryAPI/1.4.1/
-[8]: http://static.contentful.com/downloads/iOS/ContentfulDeliveryAPI-1.4.1.zip
+[6]: http://docs.contentfulcda.apiary.io/
+[7]: http://cocoadocs.org/docsets/ContentfulDeliveryAPI/1.9.2/
+[8]: http://static.contentful.com/downloads/iOS/ContentfulDeliveryAPI-1.9.2.zip
 [9]: http://static.contentful.com/downloads/iOS/UFO.zip
-[10]: https://www.contentful.com/developers/documentation/content-management-api/#getting-started
-[11]: https://github.com/nicklockwood/HRCoder
-[12]: https://www.contentful.com/blog/2014/04/04/Contentful-iOS-SDK/
+[11]: https://www.contentful.com/blog/2014/04/04/contentful-ios-sdk/

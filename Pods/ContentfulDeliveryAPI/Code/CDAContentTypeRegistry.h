@@ -6,11 +6,13 @@
 //
 //
 
-#import <Foundation/Foundation.h>
+@import Foundation;
 
 @class CDAContentType;
 
 @interface CDAContentTypeRegistry : NSObject
+
+@property (nonatomic, readonly) BOOL hasCustomClasses;
 
 -(void)addContentType:(CDAContentType*)contentType;
 -(CDAContentType*)contentTypeForIdentifier:(NSString*)identifier;

@@ -13,11 +13,14 @@
 #import "CDASpace+Private.h"
 #import "CDAUtilities.h"
 
-const CGFloat CDAImageQualityOriginal = 0.0;
+const CGFloat CDAImageQualityOriginal   = 0.0;
+const CGFloat CDARadiusMaximum          = -100.0;
+const CGFloat CDARadiusNone             = 0.0;
 
 @interface CDAAsset ()
 
 @property (nonatomic) NSDictionary* localizedFields;
+@property (nonatomic) NSString* protocol;
 
 @end
 
@@ -92,7 +95,12 @@ const CGFloat CDAImageQualityOriginal = 0.0;
         return;
     }
 
-    [NSURLConnection sendAsynchronousRequest:[NSURLRequest requestWithURL:self.URL]
+    if (!self.URL) {
+        return;
+    }
+
+    NSURL* url = self.URL;
+    [NSURLConnection sendAsynchronousRequest:[NSURLRequest requestWithURL:url]
                                        queue:[NSOperationQueue mainQueue]
                            completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
                                if (!data) {
@@ -116,7 +124,8 @@ const CGFloat CDAImageQualityOriginal = 0.0;
 }
 
 -(NSDictionary *)fields {
-    return self.localizedFields[self.locale];
+    NSDictionary* localizedFields = self.localizedFields[self.locale];
+    return localizedFields ?: @{};
 }
 
 -(NSURL *)imageURLWithSize:(CGSize)size {
@@ -124,6 +133,24 @@ const CGFloat CDAImageQualityOriginal = 0.0;
 }
 
 -(NSURL *)imageURLWithSize:(CGSize)size quality:(CGFloat)quality format:(CDAImageFormat)format {
+    return [self imageURLWithSize:size
+                          quality:quality
+                           format:format
+                              fit:CDAFitDefault
+                            focus:nil
+                           radius:CDARadiusNone
+                       background:nil
+                      progressive:false];
+}
+
+-(NSURL *)imageURLWithSize:(CGSize)size
+                   quality:(CGFloat)quality
+                    format:(CDAImageFormat)format
+                       fit:(CDAFitType)fit
+                     focus:(NSString *)focus
+                    radius:(CGFloat)radius
+                background:(NSString *)backgroundColor
+               progressive:(BOOL)progressive {
     if (!self.isImage) {
         return self.URL;
     }
@@ -135,7 +162,8 @@ const CGFloat CDAImageQualityOriginal = 0.0;
         parameters[@"h"] = @(size.height);
     }
     
-    if (quality != CDAImageQualityOriginal) {
+    if (fabs((quality) - (CDAImageQualityOriginal)) > FLT_EPSILON) {
+        NSAssert(quality <= 1.0, @"Quality parameter should be between 0.0 and 1.0, but is %.2f", quality);
         parameters[@"q"] = @(quality * 100);
     }
     
@@ -146,10 +174,52 @@ const CGFloat CDAImageQualityOriginal = 0.0;
         case CDAImageFormatPNG:
             parameters[@"fm"] = @"png";
             break;
-        default:
+        case CDAImageFormatOriginal:
             break;
     }
-    
+
+    switch (fit) {
+        case CDAFitPad:
+            parameters[@"fit"] = @"pad";
+            break;
+        case CDAFitCrop:
+            parameters[@"fit"] = @"crop";
+            break;
+        case CDAFitFill:
+            parameters[@"fit"] = @"fill";
+            break;
+        case CDAFitScale:
+            parameters[@"fit"] = @"scale";
+            break;
+        case CDAFitThumb:
+            parameters[@"fit"] = @"thumb";
+            break;
+        case CDAFitDefault:
+            break;
+    }
+
+    if (focus) {
+        parameters[@"f"] = focus;
+    }
+
+    if (fabs(radius - CDARadiusNone) > FLT_EPSILON) {
+        if (fabs(radius - CDARadiusMaximum) < FLT_EPSILON) {
+            parameters[@"r"] = @"max";
+        } else {
+            if (radius > 0) {
+                parameters[@"r"] = @(radius);
+            }
+        }
+    }
+
+    if (backgroundColor) {
+        parameters[@"bg"] = backgroundColor;
+    }
+
+    if (progressive) {
+        parameters[@"fl"] = @"progressive";
+    }
+
     if (parameters.count == 0) {
         return self.URL;
     }
@@ -177,11 +247,14 @@ const CGFloat CDAImageQualityOriginal = 0.0;
         if (fields) {
             // Ensure there is a zero size in any case
             if (!fields[@"file"][@"details"][@"size"]) {
+                NSDictionary* file = fields[@"file"] ?: @{};
+                NSDictionary* details = file[@"details"] ?: @{};
+
                 NSMutableDictionary* mutableFields = [fields mutableCopy];
                 NSMutableDictionary* mutableFile = [[NSMutableDictionary alloc]
-                                                    initWithDictionary:fields[@"file"]];
+                                                    initWithDictionary:file];
                 NSMutableDictionary* mutableDetails = [[NSMutableDictionary alloc]
-                                                       initWithDictionary:fields[@"file"][@"details"]];
+                                                       initWithDictionary:details];
                 
                 mutableDetails[@"size"] = @0;
                 mutableFile[@"details"] = [mutableDetails copy];
@@ -231,6 +304,14 @@ const CGFloat CDAImageQualityOriginal = 0.0;
                                   } failure:failure];
 }
 
+-(void)setClient:(CDAClient *)client {
+    [super setClient:client];
+
+    if (self.client.protocol) {
+        self.protocol = self.client.protocol;
+    }
+}
+
 -(void)setLocale:(NSString *)locale {
     if (_locale == locale) {
         return;
@@ -265,7 +346,7 @@ const CGFloat CDAImageQualityOriginal = 0.0;
     }
     
     if ([url rangeOfString:@"://"].location == NSNotFound) {
-        url = [NSString stringWithFormat:@"%@:%@", self.client.protocol, url];
+        url = [NSString stringWithFormat:@"%@:%@", self.protocol, url];
     }
     
     return [NSURL URLWithString:url];

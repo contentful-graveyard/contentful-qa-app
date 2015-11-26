@@ -6,19 +6,27 @@
 //
 //
 
+@import ObjectiveC.runtime;
+
 #import <ContentfulDeliveryAPI/CDAArray.h>
 #import <ContentfulDeliveryAPI/CDAAsset.h>
 #import <ContentfulDeliveryAPI/CDAContentType.h>
+#import <ContentfulDeliveryAPI/CDAField.h>
+#import <ContentfulDeliveryAPI/CDALocalizablePersistedEntry.h>
 #import <ContentfulDeliveryAPI/CDASyncedSpace.h>
 
+#import "CDAClient+Private.h"
+#import "CDAContentTypeRegistry.h"
 #import "CDAEntry+Private.h"
 #import "CDAPersistenceManager.h"
 #import "CDAUtilities.h"
 
 @interface CDAPersistenceManager () <CDASyncedSpaceDelegate>
 
+@property (nonatomic) NSMutableDictionary* classesForLocalizedEntries;
 @property (nonatomic) NSMutableDictionary* classesForEntries;
 @property (nonatomic) CDAClient* client;
+@property (nonatomic) BOOL hasChanged;
 @property (nonatomic) NSMutableDictionary* mappingForEntries;
 @property (nonatomic, copy) NSDictionary* query;
 @property (nonatomic) CDASyncedSpace* syncedSpace;
@@ -51,6 +59,14 @@
     return self.classesForEntries[identifier];
 }
 
+-(Class)classForLocalizedEntriesOfContentTypeWithIdentifier:(NSString *)identifier {
+    return self.classesForLocalizedEntries[identifier];
+}
+
+-(id<CDALocalizedPersistedEntry>)createLocalizedPersistedEntryForContentTypeWithIdentifier:(NSString *)identifier {
+    return [self.classesForLocalizedEntries[identifier] new];
+}
+
 -(id<CDAPersistedAsset>)createPersistedAsset {
     return [self.classForAssets new];
 }
@@ -71,6 +87,10 @@
     [self doesNotRecognizeSelector:_cmd];
 }
 
+-(void)deleteLocalizedEntryWithIdentifier:(NSString*)identifier {
+    [self doesNotRecognizeSelector:_cmd];
+}
+
 -(NSArray *)fetchAssetsFromDataStore {
     [self doesNotRecognizeSelector:_cmd];
     return nil;
@@ -81,7 +101,18 @@
     return nil;
 }
 
+-(NSArray *)fetchEntriesFromDataStore {
+    [self doesNotRecognizeSelector:_cmd];
+    return nil;
+}
+
 -(id<CDAPersistedEntry>)fetchEntryWithIdentifier:(NSString*)identifier {
+    [self doesNotRecognizeSelector:_cmd];
+    return nil;
+}
+
+-(id<CDALocalizedPersistedEntry>)fetchLocalizedEntryWithIdentifier:(NSString*)identifier
+                                                            locale:(NSString*)locale {
     [self doesNotRecognizeSelector:_cmd];
     return nil;
 }
@@ -120,11 +151,11 @@
                                    usingBlock:^CDAResource *(CDAResource *resource,
                                                              NSDictionary *assets,
                                                              NSDictionary *entries) {
-                                       if ([resource isKindOfClass:[CDAAsset class]]) {
+                                       if (CDAClassIsOfType([resource class], CDAAsset.class)) {
                                            [self handleAsset:(CDAAsset*)resource];
                                        }
                                        
-                                       if ([resource isKindOfClass:[CDAEntry class]]) {
+                                       if (CDAClassIsOfType([resource class], CDAEntry.class)) {
                                            [self handleEntry:(CDAEntry*)resource];
                                        }
                                        
@@ -152,6 +183,7 @@
     self = [super init];
     if (self) {
         self.classesForEntries = [@{} mutableCopy];
+        self.classesForLocalizedEntries = [@{} mutableCopy];
         self.client = client;
         self.mappingForEntries = [@{} mutableCopy];
     }
@@ -162,6 +194,7 @@
     self = [super init];
     if (self) {
         self.classesForEntries = [@{} mutableCopy];
+        self.classesForLocalizedEntries = [@{} mutableCopy];
         self.client = client;
         self.mappingForEntries = [@{} mutableCopy];
         self.query = query;
@@ -170,7 +203,67 @@
 }
 
 -(NSDictionary *)mappingForEntriesOfContentTypeWithIdentifier:(NSString *)identifier {
-    return self.mappingForEntries[identifier];
+    NSDictionary* userDefinedMapping = self.mappingForEntries[identifier];
+
+    if (!userDefinedMapping) {
+        NSMutableArray* props = [[self propertiesForEntriesOfContentTypeWithIdentifier:identifier] mutableCopy];
+
+        Protocol* proto = objc_getProtocol("CDAPersistedEntry");
+        unsigned int definedPropsCount = 0;
+        objc_property_t* definedProps = protocol_copyPropertyList(proto, &definedPropsCount);
+
+        for (unsigned int i = 0; i < definedPropsCount; i++) {
+            NSString* propName = [[NSString alloc] initWithCString:property_getName(definedProps[0]) encoding:NSUTF8StringEncoding];
+            [props removeObject:propName];
+        }
+
+        NSMutableDictionary* automaticMapping = [@{} mutableCopy];
+
+        CDAContentType* type = [self.client.contentTypeRegistry contentTypeForIdentifier:identifier];
+        for (CDAField* field in type.fields) {
+            if ([props containsObject:field.identifier]) {
+                automaticMapping[[@"fields." stringByAppendingString:field.identifier]] = field.identifier;
+            }
+        }
+
+        userDefinedMapping = [automaticMapping copy];
+        [self setMapping:userDefinedMapping forEntriesOfContentTypeWithIdentifier:identifier];
+    }
+    
+    return userDefinedMapping;
+}
+
+-(NSDictionary *)fieldMappingForEntriesOfContentTypeWithIdentifier:(NSString *)identifier {
+    NSDictionary* mapping = [self mappingForEntriesOfContentTypeWithIdentifier:identifier];
+    CDAContentType* type = [self.client.contentTypeRegistry contentTypeForIdentifier:identifier];
+
+    NSMutableDictionary* fieldMapping = [mapping mutableCopy];
+    for (NSString* key in mapping.allKeys) {
+        if (![key hasPrefix:@"fields."]) {
+            continue;
+        }
+
+        NSString* fieldId = [key componentsSeparatedByString:@"."][1];
+        CDAField* field = [type fieldForIdentifier:fieldId];
+
+        if (field && field.type == CDAFieldTypeArray && field.itemType != CDAFieldTypeSymbol) {
+            [fieldMapping removeObjectForKey:key];
+        }
+    }
+
+    return [fieldMapping copy];
+}
+
+-(NSDictionary *)relationshipMappingForEntriesOfContentTypeWithIdentifier:(NSString *)identifier {
+    NSDictionary* fieldMapping = [self fieldMappingForEntriesOfContentTypeWithIdentifier:identifier];
+    NSDictionary* mapping = [self mappingForEntriesOfContentTypeWithIdentifier:identifier];
+
+    NSMutableDictionary* relationshipMapping = [mapping mutableCopy];
+    for (NSString* key in fieldMapping.allKeys) {
+        [relationshipMapping removeObjectForKey:key];
+    }
+
+    return [relationshipMapping copy];
 }
 
 -(void)performInitalSynchronizationForQueryWithSuccess:(void (^)())success
@@ -191,7 +284,9 @@
     NSMutableDictionary* query = [self.query mutableCopy];
     
     id<CDAPersistedSpace> space = [self fetchSpaceFromDataStore];
-    query[@"sys.updatedAt[gt]"] = space.lastSyncTimestamp;
+    if (space.lastSyncTimestamp) {
+        query[@"sys.updatedAt[gt]"] = space.lastSyncTimestamp;
+    }
     
     NSArray* knownAssetIds = [[self fetchAssetsFromDataStore] valueForKey:@"identifier"];
     NSDictionary* queryForAssets = @{ @"sys.id[in]": knownAssetIds,
@@ -218,7 +313,9 @@
     NSParameterAssert(self.classForAssets);
     NSParameterAssert(self.classForSpaces);
     NSParameterAssert(self.client);
-    
+
+    self.hasChanged = NO;
+
     if (self.query) {
         if (self.syncedSpace) {
             [self.syncedSpace performSynchronizationWithSuccess:^{
@@ -253,8 +350,10 @@
                 success();
             }
         } failure:failure];
-        
-        request = nil;
+
+        if (request) {
+            request = nil;
+        }
         return;
     }
     
@@ -278,7 +377,12 @@
 }
 
 -(id<CDAPersistedEntry>)persistedEntryForEntry:(CDAEntry*)entry {
-    id<CDAPersistedEntry> persistedEntry = [self createPersistedEntryForContentTypeWithIdentifier:entry.contentType.identifier];
+    NSString* identifier = entry.contentType.identifier;
+    if (!identifier) {
+        return nil;
+    }
+
+    id<CDAPersistedEntry> persistedEntry = [self createPersistedEntryForContentTypeWithIdentifier:identifier];
     if (!persistedEntry) {
         return nil;
     }
@@ -294,6 +398,11 @@
     return persistedSpace;
 }
 
+-(NSArray *)propertiesForEntriesOfContentTypeWithIdentifier:(NSString *)identifier {
+    [self doesNotRecognizeSelector:_cmd];
+    return nil;
+}
+
 -(NSDate*)roundedCurrentDate {
     NSTimeInterval time = round([[NSDate date] timeIntervalSinceReferenceDate] / 60.0) * 60.0;
     return [NSDate dateWithTimeIntervalSinceReferenceDate:time];
@@ -305,6 +414,10 @@
 
 -(void)setClass:(Class)classForEntries forEntriesOfContentTypeWithIdentifier:(NSString *)identifier {
     self.classesForEntries[identifier] = classForEntries;
+}
+
+-(void)setClass:(Class)classForEntries forLocalizedEntriesOfContentTypeWithIdentifier:(NSString *)identifier {
+    self.classesForLocalizedEntries[identifier] = classForEntries;
 }
 
 -(void)setMapping:(NSDictionary *)mapping forEntriesOfContentTypeWithIdentifier:(NSString *)identifier {
@@ -331,13 +444,51 @@
     persistedAsset.identifier = asset.identifier;
     persistedAsset.internetMediaType = asset.MIMEType;
     persistedAsset.url = asset.URL.absoluteString;
+
+    if ([persistedAsset respondsToSelector:@selector(setWidth:)]) {
+        persistedAsset.width = @(asset.size.width);
+    }
+
+    if ([persistedAsset respondsToSelector:@selector(setHeight:)]) {
+        persistedAsset.height = @(asset.size.height);
+    }
 }
 
 -(void)updatePersistedEntry:(id<CDAPersistedEntry>)persistedEntry withEntry:(CDAEntry*)entry {
     NSAssert([persistedEntry conformsToProtocol:@protocol(CDAPersistedEntry)],
              @"%@ does not conform to CDAPersistedEntry protocol.", persistedEntry);
+
+    NSString* identifier = entry.contentType.identifier;
+    if (!identifier) {
+        return;
+    }
     
-    NSDictionary* mappingForEntries = [self mappingForEntriesOfContentTypeWithIdentifier:entry.contentType.identifier];
+    NSDictionary* mappingForEntries = [self mappingForEntriesOfContentTypeWithIdentifier:identifier];
+
+    if (CDAClassIsOfType([persistedEntry class], CDALocalizablePersistedEntry.class)) {
+        mappingForEntries = [self relationshipMappingForEntriesOfContentTypeWithIdentifier:identifier];
+        CDALocalizablePersistedEntry* parent = (CDALocalizablePersistedEntry*)persistedEntry;
+        NSDictionary* fieldMapping = [self fieldMappingForEntriesOfContentTypeWithIdentifier:identifier];
+        NSString* initialLocale = entry.locale;
+
+        for (NSString* locale in entry.localizedFields.allKeys) {
+            id<CDALocalizedPersistedEntry> localEntry = [self fetchLocalizedEntryWithIdentifier:identifier
+                                                                                         locale:locale];
+
+            if (!localEntry) {
+                localEntry = [self createLocalizedPersistedEntryForContentTypeWithIdentifier:identifier];
+                [parent addLocalizedEntriesObject:localEntry];
+            }
+
+            entry.locale = locale;
+            [entry mapFieldsToObject:localEntry usingMapping:fieldMapping];
+            localEntry.identifier = entry.identifier;
+            localEntry.locale = locale;
+        }
+
+        entry.locale = initialLocale;
+    }
+
     [entry mapFieldsToObject:persistedEntry usingMapping:mappingForEntries];
     persistedEntry.identifier = entry.identifier;
 }
@@ -345,22 +496,32 @@
 #pragma mark - CDASyncedSpaceDelegate
 
 -(void)syncedSpace:(CDASyncedSpace *)space didCreateAsset:(CDAAsset *)asset {
+    self.hasChanged = YES;
+
     [self persistedAssetForAsset:asset];
 }
 
 -(void)syncedSpace:(CDASyncedSpace *)space didCreateEntry:(CDAEntry *)entry {
+    self.hasChanged = YES;
+
     [self persistedEntryForEntry:entry];
 }
 
 -(void)syncedSpace:(CDASyncedSpace *)space didDeleteAsset:(CDAAsset *)asset {
+    self.hasChanged = YES;
+
     [self deleteAssetWithIdentifier:asset.identifier];
 }
 
 -(void)syncedSpace:(CDASyncedSpace *)space didDeleteEntry:(CDAEntry *)entry {
+    self.hasChanged = YES;
+
     [self deleteEntryWithIdentifier:entry.identifier];
 }
 
 -(void)syncedSpace:(CDASyncedSpace *)space didUpdateAsset:(CDAAsset *)asset {
+    self.hasChanged = YES;
+
     id<CDAPersistedAsset> persistedAsset = [self fetchAssetWithIdentifier:asset.identifier];
     
     if (!persistedAsset) {
@@ -371,10 +532,17 @@
 }
 
 -(void)syncedSpace:(CDASyncedSpace *)space didUpdateEntry:(CDAEntry *)entry {
+    NSString* identifier = entry.contentType.identifier;
+    if (!identifier) {
+        return;
+    }
+
+    self.hasChanged = YES;
+
     id<CDAPersistedEntry> persistedEntry = [self fetchEntryWithIdentifier:entry.identifier];
     
     if (!persistedEntry) {
-        persistedEntry = [self createPersistedEntryForContentTypeWithIdentifier:entry.contentType.identifier];
+        persistedEntry = [self createPersistedEntryForContentTypeWithIdentifier:identifier];
     }
     
     [self updatePersistedEntry:persistedEntry withEntry:entry];

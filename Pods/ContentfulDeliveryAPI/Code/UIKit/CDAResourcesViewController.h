@@ -6,10 +6,13 @@
 //
 //
 
+@import UIKit;
+
 #import <ContentfulDeliveryAPI/CDAClient.h>
-#import <UIKit/UIKit.h>
 
 @class CDAResource;
+
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  `CDAResourcesViewController` is designed to make it easy to display a list of Resources in a table view.
@@ -72,23 +75,23 @@
  
  The client is not retained.
  */
-@property (nonatomic, weak) CDAClient* client;
+@property (nonatomic, weak) CDAClient* __nullable client;
 
 /** 
  Locale to use when querying Resources. 
  
  This property has no effect when showing locally available Resources.
  */
-@property (nonatomic, copy) NSString* locale;
+@property (nonatomic, copy) NSString* __nullable locale;
 
 /** The items which are currently displayed in this view controller's table view. */
-@property (nonatomic, readonly) NSArray* items;
+@property (nonatomic, readonly) NSArray* __nullable items;
 
 /**
  The query parameters used for fetching Resources. By default, all Resources from the Space associated
  with the client will be fetched.
  */
-@property (nonatomic) NSDictionary* query;
+@property (nonatomic) NSDictionary* __nullable query;
 
 /** The type of Resources which ought to be fetched. */
 @property (nonatomic) CDAResourceType resourceType;
@@ -128,3 +131,5 @@
 -(void)showError:(NSError*)error;
 
 @end
+
+NS_ASSUME_NONNULL_END

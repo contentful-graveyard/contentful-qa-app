@@ -18,6 +18,7 @@
 #import "CDAImageViewController.h"
 #import "CDALocationViewController.h"
 #import "CDATextViewController.h"
+#import "CDAUtilities.h"
 
 @interface CDAFieldsViewController ()
 
@@ -45,7 +46,7 @@
             }
             
             CDAEntry* entry = [array firstObject];
-            if (![entry isKindOfClass:[CDAEntry class]] || !entry.fetched) {
+            if (!CDAClassIsOfType([entry class], CDAEntry.class) || !entry.fetched) {
                 [self.client resolveLinksFromArray:array
                                            success:^(NSArray *items) {
                                                [self showResourcesFromArray:items withTitle:field.name];
@@ -61,14 +62,14 @@
             
         case CDAFieldTypeLink: {
             [value resolveWithSuccess:^(CDAResponse *response, CDAResource *resource) {
-                if ([resource isKindOfClass:[CDAAsset class]]) {
+                if (CDAClassIsOfType([resource class], CDAAsset.class)) {
                     CDAImageViewController* imageVC = [CDAImageViewController new];
                     imageVC.asset = (CDAAsset*)resource;
                     imageVC.title = field.name;
                     [self.navigationController pushViewController:imageVC animated:YES];
                 }
                 
-                if ([resource isKindOfClass:[CDAEntry class]]) {
+                if (CDAClassIsOfType([resource class], CDAEntry.class)) {
                     CDAFieldsViewController* linkedFieldsVC = [[CDAFieldsViewController alloc]
                                                                initWithEntry:(CDAEntry*)resource];
                     linkedFieldsVC.client = self.client;
@@ -98,7 +99,14 @@
             }
             break;
             
-        default:
+        case CDAFieldTypeAsset:
+        case CDAFieldTypeBoolean:
+        case CDAFieldTypeDate:
+        case CDAFieldTypeEntry:
+        case CDAFieldTypeInteger:
+        case CDAFieldTypeNone:
+        case CDAFieldTypeNumber:
+        case CDAFieldTypeObject:
             break;
     }
 }
@@ -113,19 +121,33 @@
     if (self) {
         self.entry = entry;
 
-        switch ([entry.contentType fieldForIdentifier:entry.contentType.displayField].type) {
+        NSString* displayField = entry.contentType.displayField;
+        CDAFieldType titleType = CDAFieldTypeNone;
+
+        if (displayField) {
+            titleType = [entry.contentType fieldForIdentifier:displayField].type;
+        }
+
+        switch (titleType) {
             case CDAFieldTypeText:
             case CDAFieldTypeSymbol:
-                self.title = entry.fields[entry.contentType.displayField];
+                self.title = entry.fields[displayField];
                 break;
 
             case CDAFieldTypeInteger:
             case CDAFieldTypeBoolean:
             case CDAFieldTypeNumber:
-                self.title = [entry.fields[entry.contentType.displayField] stringValue];
+                self.title = [entry.fields[displayField] stringValue];
                 break;
 
-            default:
+            case CDAFieldTypeArray:
+            case CDAFieldTypeAsset:
+            case CDAFieldTypeDate:
+            case CDAFieldTypeEntry:
+            case CDAFieldTypeLink:
+            case CDAFieldTypeLocation:
+            case CDAFieldTypeNone:
+            case CDAFieldTypeObject:
                 break;
         }
         
@@ -163,14 +185,15 @@
     NSDictionary* cellMapping = nil;
     CDAResource* resource = [array firstObject];
     
-    if ([resource isKindOfClass:[CDAAsset class]]) {
+    if (CDAClassIsOfType([resource class], CDAAsset.class)) {
         cellMapping = @{ @"textLabel.text": @"fields.title" };
     }
     
-    if ([resource isKindOfClass:[CDAEntry class]]) {
+    if (CDAClassIsOfType([resource class], CDAEntry.class)) {
         CDAEntry* entry = (CDAEntry*)resource;
         if (entry.contentType.displayField) {
-            cellMapping = @{ @"textLabel.text": [@"fields." stringByAppendingString:entry.contentType.displayField] };
+            NSString* displayField = entry.contentType.displayField;
+            cellMapping = @{ @"textLabel.text": [@"fields." stringByAppendingString:displayField] };
         }
     }
     

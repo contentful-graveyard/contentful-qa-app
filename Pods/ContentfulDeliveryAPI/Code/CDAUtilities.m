@@ -6,7 +6,7 @@
 //
 //
 
-#import <objc/runtime.h>
+@import ObjectiveC.runtime;
 
 #import <ContentfulDeliveryAPI/CDASpace.h>
 
@@ -35,7 +35,9 @@ NSString* CDACacheDirectory() {
                                                                  attributes:nil
                                                                       error:&error];
         NSCAssert(result, @"Error: %@", error);
+#ifndef __clang_analyzer__
         result = YES;
+#endif
     }
     
     return cachesPath;
@@ -65,6 +67,7 @@ NSString* CDACacheFileNameForResource(CDAResource* resource) {
 NSArray* CDAClassGetSubclasses(Class parentClass) {
     int numClasses = objc_getClassList(NULL, 0);
     Class* classes = NULL;
+    static const Class invalidClass =  (__bridge Class) (void*) (((intptr_t) 0)-1);
     
     classes = (__unsafe_unretained Class*)malloc(sizeof(Class) * numClasses);
     numClasses = objc_getClassList(classes, numClasses);
@@ -74,9 +77,9 @@ NSArray* CDAClassGetSubclasses(Class parentClass) {
         Class superClass = classes[i];
         do {
             superClass = class_getSuperclass(superClass);
-        } while(superClass && superClass != parentClass);
+        } while(superClass && (superClass != parentClass) && (superClass != invalidClass));
         
-        if (superClass == nil) {
+        if ((superClass == nil) || (superClass == invalidClass)) {
             continue;
         }
         
@@ -85,6 +88,20 @@ NSArray* CDAClassGetSubclasses(Class parentClass) {
     
     free(classes);
     return result;
+}
+
+BOOL CDAClassIsEqualToClass(Class someClass, Class otherClass) {
+    return [NSStringFromClass(someClass) isEqualToString:NSStringFromClass(otherClass)];
+}
+
+BOOL CDAClassIsOfType(Class someClass, Class otherClass) {
+    do {
+        if (CDAClassIsEqualToClass(someClass, otherClass)) {
+            return YES;
+        }
+    } while ((someClass = class_getSuperclass(someClass)));
+
+    return NO;
 }
 
 void CDADecodeObjectWithCoder(id object, NSCoder* aDecoder) {
@@ -174,6 +191,28 @@ void CDAPropertyVisitor(Class class, void(^visitor)(objc_property_t property, NS
     CDAPropertyVisitor([class superclass], visitor);
 }
 
+id CDAReadItemFromFileURL(NSURL* fileURL, CDAClient* client) {
+    if (fileURL == nil || !fileURL.isFileURL) {
+        return nil;
+    }
+
+    id item = nil;
+    NSData *data = [NSData dataWithContentsOfURL:fileURL options:NSDataReadingMappedIfSafe error:nil];
+    if (data != nil) {
+        @try {
+            item = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+        } @catch (id ue) {
+            (void) ue;
+            return nil;
+        }
+
+        [(CDAResource*)item setClient:client];
+        return item;
+    }
+
+    return nil;
+}
+
 NSString* CDASquashWhitespacesInString(NSString* string) {
     return CDASquashCharactersFromSetInString([NSCharacterSet whitespaceAndNewlineCharacterSet], string);
 }
@@ -186,4 +225,16 @@ NSString* CDASquashCharactersFromSetInString(NSCharacterSet* characterSet, NSStr
     components = [components filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self <> ''"]];
     
     return [components componentsJoinedByString:@""];
+}
+
+NSString* CDAValueForQueryParameter(NSURL* url, NSString* queryParameter) {
+    for (NSString* parameters in [url.query componentsSeparatedByString:@"&"]) {
+        NSArray* query = [parameters componentsSeparatedByString:@"="];
+
+        if ([[query firstObject] isEqualToString:queryParameter]) {
+            return [[query lastObject] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        }
+    }
+
+    return nil;
 }

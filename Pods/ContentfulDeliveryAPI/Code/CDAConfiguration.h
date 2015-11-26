@@ -6,7 +6,11 @@
 //
 //
 
-#import <Foundation/Foundation.h>
+@import Foundation;
+
+#import <ContentfulDeliveryAPI/CDANullabilityStubs.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  Class representing additional configuration options for a `CDAClient`.
@@ -24,17 +28,27 @@
 
 /** @name Configuring parameters */
 
+/** Automatically filter any non-existing resources being linked to. */
+@property (nonatomic) BOOL filterNonExistingResources;
+
+/** Automatically retry requests if rate-limits are exceeded. */
+@property (nonatomic) BOOL rateLimiting;
+
 /** If `YES`, a secure HTTPS connection will be used instead of regular HTTP. Default value: `YES` */
 @property (nonatomic) BOOL secure;
+
 /** The server address to use for accessing any resources. Default value: "cdn.contentful.com" */
 @property (nonatomic) NSString* server;
+
+/** Configure a custom user-agent to be used in the HTTP request headers */
+@property (nonatomic) NSString* userAgent;
 
 /** @name Configure Preview Mode */
 
 /** Preview mode allows retrieving unpublished Resources. 
  
  To use it, you have to obtain a special access
- token from [here](https://www.contentful.com/developers/documentation/content-management-api/#getting-started). 
+ token which you can get in the "API" tab of the Contentful app. 
  
  In preview mode, data can be invalid, because no validation is performed on unpublished entries. Your
  app needs to deal with that. Be aware that the access token is read-write and should in no case be
@@ -52,3 +66,5 @@
 @property (nonatomic) BOOL previewMode;
 
 @end
+
+NS_ASSUME_NONNULL_END

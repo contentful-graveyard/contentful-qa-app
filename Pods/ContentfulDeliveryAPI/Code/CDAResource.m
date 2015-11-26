@@ -6,23 +6,39 @@
 //
 //
 
-#import <objc/runtime.h>
+@import ObjectiveC.runtime;
 
 #import <ContentfulDeliveryAPI/CDAConfiguration.h>
 #import <ContentfulDeliveryAPI/CDAContentType.h>
 #import <ContentfulDeliveryAPI/CDAResource.h>
 #import <ContentfulDeliveryAPI/CDASpace.h>
-#import <HRCoder/HRCoder.h>
 #import <ISO8601DateFormatter/ISO8601DateFormatter.h>
 
 #import "CDAClient+Private.h"
 #import "CDAContentTypeRegistry.h"
+#import "CDAInputSanitizer.h"
 #import "CDAResource+Private.h"
 #import "CDAUtilities.h"
 
 // From: https://www.mikeash.com/pyblog/friday-qa-2010-06-18-implementing-equality-and-hashing.html
 #define NSUINT_BIT (CHAR_BIT * sizeof(NSUInteger))
 #define NSUINTROTATE(val, howmuch) ((((NSUInteger)val) << howmuch) | (((NSUInteger)val) >> (NSUINT_BIT - howmuch)))
+
+typedef struct typeToClassMap_s {
+    CFStringRef typeName;
+    CFStringRef className;
+} typeToClassMap_t;
+
+static const typeToClassMap_t typeToClassMap[] = {
+    { CFSTR("array"), CFSTR("CDAArray") },
+    { CFSTR("asset"), CFSTR("CDAAsset") },
+    { CFSTR("contenttype"), CFSTR("CDAContentType") },
+    { CFSTR("deletedasset"), CFSTR("CDADeletedAsset") },
+    { CFSTR("deletedentry"), CFSTR("CDADeletedEntry") },
+    { CFSTR("entry"), CFSTR("CDAEntry") },
+    { CFSTR("error"), CFSTR("CDAError") },
+    { CFSTR("space"), CFSTR("CDASpace") },
+};
 
 @interface CDAResource ()
 
@@ -36,35 +52,27 @@
 
 @implementation CDAResource
 
-+(BOOL)class:(Class)someClass isEqualToClass:(Class)otherClass {
-    return [NSStringFromClass(someClass.class) isEqualToString:NSStringFromClass(otherClass.class)];
-}
-
 +(BOOL)classIsOfType:(Class)otherClass {
-    do {
-        if ([self class:self isEqualToClass:otherClass]) {
-            return YES;
-        }
-    } while ((otherClass = class_getSuperclass(otherClass)));
-    
-    return NO;
+    return CDAClassIsOfType(otherClass, self.class);
 }
 
-+(instancetype)readFromFile:(NSString*)filePath client:(CDAClient*)client {
-    CDAResource* item = nil;
-    
-    if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
-        item = [HRCoder unarchiveObjectWithData:[NSData dataWithContentsOfFile:filePath]];
++(nullable instancetype)readFromFile:(NSString*)filePath client:(CDAClient*)client {
+    if (filePath == nil) {
+        return nil;
     }
-    
-    item.client = client;
-    return item;
+    return [self readFromFileURL:[NSURL fileURLWithPath:filePath] client:client];
+}
+
++(nullable instancetype)readFromFileURL:(NSURL*)fileURL client:(CDAClient*)client {
+    return CDAReadItemFromFileURL(fileURL, client);
 }
 
 +(instancetype)resourceObjectForDictionary:(NSDictionary *)dictionary client:(CDAClient*)client {
     if (![dictionary isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
+
+    dictionary = [CDAInputSanitizer sanitizeObject:dictionary];
     
     NSString* resourceType = dictionary[@"sys"][@"type"];
     
@@ -72,21 +80,48 @@
     if (isLink) {
         resourceType = dictionary[@"sys"][@"linkType"];
     }
-    
-    for (Class subclass in [self subclasses]) {
-        // Avoid clashes with custom subclasses the user created
-        if (![NSStringFromClass(subclass) hasPrefix:client.resourceClassPrefix]) {
-            continue;
+
+    if (resourceType == nil) {
+        NSAssert(false, @"No resource type given.");
+        return nil;
+    }
+    resourceType = [resourceType lowercaseString];
+
+    if (client.contentTypeRegistry.hasCustomClasses) {
+        for (Class subclass in [self subclasses]) {
+            // Avoid clashes with custom subclasses the user created
+            if (![NSStringFromClass(subclass) hasPrefix:client.resourceClassPrefix]) {
+                continue;
+            }
+
+            if ([[[subclass CDAType] lowercaseString] isEqualToString:resourceType]) {
+                return [self resourceObjectForSubclass:subclass dictionary:dictionary client:client];
+            }
         }
-        
-        if ([[[subclass CDAType] lowercaseString] isEqualToString:[resourceType lowercaseString]]) {
-            CDAResource* resource = [[subclass alloc] initWithDictionary:dictionary client:client];
-            return resource;
+    } else {
+        size_t const typeCount = sizeof(typeToClassMap) / sizeof(*typeToClassMap);
+        for (size_t i = 0; i < typeCount; i++) {
+            NSString * const name = (__bridge id) typeToClassMap[i].typeName;
+            if ([name isEqualToString:resourceType]) {
+                NSString * const className = (__bridge id) typeToClassMap[i].className;
+                Class const subclass = NSClassFromString(className);
+                return [self resourceObjectForSubclass:subclass dictionary:dictionary client:client];
+            }
         }
     }
     
     NSAssert(false, @"Unsupported resource type '%@'", resourceType);
     return nil;
+}
+
++(instancetype)resourceObjectForSubclass:(Class)subclass
+                              dictionary:(NSDictionary *)dictionary
+                                  client:(CDAClient *)client {
+    CDAResource* resource = [[subclass alloc] initWithDictionary:dictionary client:client];
+    if (!resource.fetched && client.configuration.filterNonExistingResources) {
+        return nil;
+    }
+    return resource;
 }
 
 +(NSArray*)subclasses {
@@ -123,7 +158,9 @@
 }
 
 -(NSString *)identifier {
-    return self.sys[@"id"];
+    NSString* identifier = self.sys[@"id"];
+    NSParameterAssert(identifier);
+    return identifier;
 }
 
 -(id)initWithCoder:(NSCoder *)aDecoder {
@@ -156,7 +193,14 @@
 }
 
 -(BOOL)isEqualToResource:(CDAResource*)resource {
-    return [self.sys[@"type"] isEqualToString:resource.sys[@"type"]] && [self.identifier isEqualToString:resource.identifier];
+    NSString* resourceType = resource.sys[@"type"];
+    NSString* resourceIdentifier = resource.identifier;
+
+    if (!resourceIdentifier || !resourceType) {
+        return false;
+    }
+
+    return [self.sys[@"type"] isEqualToString:resourceType] && [self.identifier isEqualToString:resourceIdentifier];
 }
 
 -(BOOL)isLink {
@@ -257,10 +301,6 @@
         }
     }];
 
-    if (client.configuration.previewMode && systemProperties[@"publishedCounter"]) {
-        systemProperties[@"revision"] = systemProperties[@"publishedCounter"];
-    }
-
     self.sys = systemProperties;
     self.lastFetchedDate = self.isLink ? nil : [NSDate date];
 }
@@ -285,7 +325,7 @@
 }
 
 -(void)writeToFile:(NSString*)filePath {
-    NSData* data = [HRCoder archivedDataWithRootObject:self];
+    NSData* data = [NSKeyedArchiver archivedDataWithRootObject:self];
     [data writeToFile:filePath atomically:YES];
 }
 

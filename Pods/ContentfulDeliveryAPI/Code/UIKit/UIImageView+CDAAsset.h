@@ -6,8 +6,9 @@
 //
 //
 
+@import UIKit;
+
 #import <ContentfulDeliveryAPI/CDAPersistedAsset.h>
-#import <UIKit/UIKit.h>
 
 @class CDAAsset;
 
@@ -27,7 +28,7 @@
  *  @param asset An Asset pointing to an image.
  *  @exception NSIllegalArgumentException If the Asset is pointing to an image.
  */
--(void)cda_setImageWithAsset:(CDAAsset*)asset;
+-(void)cda_setImageWithAsset:(CDAAsset* __nonnull)asset;
 
 /**
  *  Set this image view's image to the image file retrieved from the given Asset.
@@ -38,7 +39,7 @@
  *  @param size             The desired size of the image. It will be resized by the server.
  *  @exception NSIllegalArgumentException If the Asset is pointing to an image.
  */
--(void)cda_setImageWithAsset:(CDAAsset*)asset size:(CGSize)size;
+-(void)cda_setImageWithAsset:(CDAAsset* __nonnull)asset size:(CGSize)size;
 
 /**
  *  Set this image view's image to the image file retrieved from the given Asset. 
@@ -50,7 +51,8 @@
  *  @param placeholderImage An alternative image which will be displayed until `asset` is loaded.
  *  @exception NSIllegalArgumentException If the Asset is pointing to an image.
  */
--(void)cda_setImageWithAsset:(CDAAsset *)asset placeholderImage:(UIImage *)placeholderImage;
+-(void)cda_setImageWithAsset:(CDAAsset* __nonnull)asset
+            placeholderImage:(UIImage* __nullable)placeholderImage;
 
 /**
  *  Set this image view's image to the image file retrieved from the given Asset.
@@ -63,9 +65,9 @@
  *  @param placeholderImage An alternative image which will be displayed until `asset` is loaded.
  *  @exception NSIllegalArgumentException If the Asset is pointing to an image.
  */
--(void)cda_setImageWithAsset:(CDAAsset *)asset
+-(void)cda_setImageWithAsset:(CDAAsset* __nonnull)asset
                         size:(CGSize)size
-            placeholderImage:(UIImage *)placeholderImage;
+            placeholderImage:(UIImage* __nullable)placeholderImage;
 
 /**
  *  Set this image view's image to the image file retrieved from the given Asset.
@@ -79,10 +81,10 @@
  *  @param placeholderImage An alternative image which will be displayed until `asset` is loaded.
  *  @exception NSIllegalArgumentException If the Asset is pointing to an image.
  */
--(void)cda_setImageWithPersistedAsset:(id<CDAPersistedAsset>)asset
-                               client:(CDAClient*)client
+-(void)cda_setImageWithPersistedAsset:(id<CDAPersistedAsset> __nonnull)asset
+                               client:(CDAClient* __nonnull)client
                                  size:(CGSize)size
-                     placeholderImage:(UIImage *)placeholderImage;
+                     placeholderImage:(UIImage * __nullable)placeholderImage;
 
 /** @name Use Offline Caching */
 

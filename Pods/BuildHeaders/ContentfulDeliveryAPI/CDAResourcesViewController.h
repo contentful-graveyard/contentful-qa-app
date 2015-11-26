@@ -1,1 +1,0 @@
-../../ContentfulDeliveryAPI/Code/UIKit/CDAResourcesViewController.h

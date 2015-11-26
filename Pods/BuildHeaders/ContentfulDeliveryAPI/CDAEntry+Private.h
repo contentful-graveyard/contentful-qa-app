@@ -1,1 +1,0 @@
-../../ContentfulDeliveryAPI/Code/CDAEntry+Private.h

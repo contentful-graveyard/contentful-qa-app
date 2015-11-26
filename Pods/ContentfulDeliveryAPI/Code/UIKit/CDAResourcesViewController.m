@@ -29,7 +29,9 @@
 @implementation CDAResourcesViewController
 
 +(Class)cellClass {
-    return NSClassFromString(@"CDAResourceTableViewCell");
+    Class cellClass = NSClassFromString(@"CDAResourceTableViewCell");
+    NSParameterAssert(cellClass);
+    return cellClass;
 }
 
 #pragma mark -
@@ -39,16 +41,17 @@
 }
 
 -(void)didSelectRowWithResource:(CDAResource*)resource {
-    if ([resource isKindOfClass:[CDAAsset class]]) {
+    if (CDAClassIsOfType([resource class], CDAAsset.class)) {
         CDAImageViewController* imageVC = [CDAImageViewController new];
         imageVC.asset = (CDAAsset*)resource;
         imageVC.title = imageVC.asset.fields[@"title"];
         [self.navigationController pushViewController:imageVC animated:YES];
     }
     
-    if ([resource isKindOfClass:[CDAContentType class]]) {
+    if (CDAClassIsOfType([resource class], CDAContentType.class)) {
         CDAContentType* contentType = (CDAContentType*)resource;
-        NSDictionary* cellMapping = contentType.displayField ? @{ @"textLabel.text": [@"fields." stringByAppendingString:contentType.displayField] } : nil;
+        NSString* displayField = contentType.displayField;
+        NSDictionary* cellMapping = displayField ? @{ @"textLabel.text": [@"fields." stringByAppendingString:displayField] } : nil;
         
         CDAEntriesViewController* entriesVC = [[CDAEntriesViewController alloc] initWithCellMapping:cellMapping];
         entriesVC.client = self.client;
@@ -58,7 +61,7 @@
         [self.navigationController pushViewController:entriesVC animated:YES];
     }
     
-    if ([resource isKindOfClass:[CDAEntry class]]) {
+    if (CDAClassIsOfType([resource class], CDAEntry.class)) {
         CDAFieldsViewController* fieldsVC = [[CDAFieldsViewController alloc]
                                              initWithEntry:(CDAEntry*)resource];
         fieldsVC.client = self.client;
@@ -113,9 +116,12 @@
                                   [self.tableView reloadData];
                                   [self handleCaching];
                               } failure:^(CDAResponse *response, NSError *error) {
-                                  if (CDAIsNoNetworkError(error)) {
+                                  CDAClient* client = self.client;
+                                  NSParameterAssert(client);
+
+                                  if (CDAIsNoNetworkError(error) && client) {
                                       self.resources = [CDAArray readFromFile:self.cacheFileName
-                                                                       client:self.client];
+                                                                       client:client];
                                       
                                       [self.tableView reloadData];
                                       return;
@@ -194,10 +200,13 @@
     }
     
     [self.view endEditing:YES];
-    
-    NSMutableDictionary* query = [[NSMutableDictionary alloc] initWithDictionary:self.query];
-    query[@"query"] = searchBar.text;
-    [self performQuery:query];
+
+    if (self.query) {
+        NSDictionary* myQuery = self.query;
+        NSMutableDictionary* query = [[NSMutableDictionary alloc] initWithDictionary:myQuery];
+        query[@"query"] = searchBar.text;
+        [self performQuery:query];
+    }
 }
 
 -(void)searchBarTextDidEndEditing:(UISearchBar *)searchBar {
@@ -226,7 +235,7 @@
                                                             forIndexPath:indexPath];
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     
-    if (![item isKindOfClass:[CDAResource class]]) {
+    if (!CDAClassIsOfType([item class], CDAResource.class)) {
         cell.accessoryType = UITableViewCellAccessoryNone;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         cell.textLabel.text = [item respondsToSelector:@selector(stringValue)] ? [item stringValue] : item;
@@ -248,7 +257,7 @@
         [cell setValue:value forKeyPath:cellKeyPath];
     }];
     
-    if (cell.textLabel.text.length == 0 && [item isKindOfClass:[CDAResource class]]) {
+    if (cell.textLabel.text.length == 0 && CDAClassIsOfType([item class], CDAResource.class)) {
         cell.textLabel.text = [(CDAResource*)item identifier];
     }
     
@@ -261,8 +270,12 @@
     if (indexPath.section != 0) {
         return;
     }
-    
-    [self didSelectRowWithResource:self.items[indexPath.row]];
+
+    id entry = self.items[indexPath.row];
+
+    if (entry) {
+        [self didSelectRowWithResource:entry];
+    }
 }
 
 @end

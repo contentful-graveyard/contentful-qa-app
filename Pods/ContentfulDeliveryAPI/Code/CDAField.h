@@ -6,7 +6,9 @@
 //
 //
 
-#import <Foundation/Foundation.h>
+@import Foundation;
+
+#import <ContentfulDeliveryAPI/CDANullabilityStubs.h>
 
 /**
  Possible field types.
@@ -42,6 +44,8 @@ typedef NS_ENUM(NSInteger, CDAFieldType) {
     CDAFieldTypeAsset,
 };
 
+NS_ASSUME_NONNULL_BEGIN
+
 /** A `CDAField` describes a single property of a `CDAEntry`. */
 @interface CDAField : NSObject <NSCoding, NSSecureCoding>
 
@@ -50,7 +54,7 @@ typedef NS_ENUM(NSInteger, CDAFieldType) {
 /** Unique ID of the field. */
 @property (nonatomic, readonly) NSString* identifier;
 /** Name of the field. */
-@property (nonatomic, readonly) NSString* name;
+@property (nonatomic, readonly) NSString* __nullable name;
 /** Type of the field. */
 @property (nonatomic, readonly) CDAFieldType type;
 /** Whether the field was disabled. */
@@ -62,3 +66,5 @@ typedef NS_ENUM(NSInteger, CDAFieldType) {
 @property (nonatomic, readonly) CDAFieldType itemType;
 
 @end
+
+NS_ASSUME_NONNULL_END

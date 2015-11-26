@@ -35,8 +35,6 @@
     return @"Entry";
 }
 
-
-
 +(NSArray*)subclasses {
     static dispatch_once_t once;
     static NSArray* subclasses;
@@ -64,20 +62,28 @@
 }
 
 -(NSString *)description {
+    NSMutableDictionary* filteredFields = [self.fields mutableCopy];
+    for (CDAField* field in self.contentType.fields) {
+        if (field.type == CDAFieldTypeLink) {
+            [filteredFields removeObjectForKey:field.identifier];
+        }
+    }
+
     /* Better than nothing, but has some \n and \t embedded because of 
      http://www.cocoabuilder.com/archive/cocoa/197297-who-broke-nslog-on-leopard.html#197302 */
-    return [NSString stringWithFormat:@"CDAEntry %@ with fields:%@", self.identifier, self.fields];
+    return [NSString stringWithFormat:@"CDAEntry %@ with fields:%@", self.identifier, filteredFields];
 }
 
 -(NSDictionary *)fields {
-    return self.localizedFields[self.locale];
+    NSDictionary* localizedFields = self.localizedFields[self.locale];
+    return localizedFields ?: @{};
 }
 
 -(NSArray*)findUnresolvedResourceOfClass:(Class)class {
     __block NSMutableArray* unresolvedResources = [@[] mutableCopy];
     
     [self resolveLinksWithIncludedAssets:nil entries:nil usingBlock:^CDAResource *(CDAResource *resource, NSDictionary *assets, NSDictionary *entries) {
-        if ([resource isKindOfClass:class] && !resource.fetched) {
+        if (CDAClassIsOfType([resource class], class) && !resource.fetched) {
             [unresolvedResources addObject:resource];
         }
         
@@ -150,7 +156,7 @@
     [dictionary enumerateKeysAndObjectsUsingBlock:^(NSString* selfKeyPath,
                                                     NSString* objectKeyPath, BOOL *stop) {
         id value = [self valueForKeyPath:selfKeyPath];
-        if ([value isKindOfClass:[CDAResource class]]) {
+        if (CDAClassIsOfType([value class], CDAResource.class) || !value) {
             return;
         }
         
@@ -191,7 +197,7 @@
         if (field.type == CDAFieldTypeArray && [value isKindOfClass:[NSArray class]]) {
             NSArray* array = value;
             
-            if (array.count > 0 && [[array firstObject] isKindOfClass:[CDAResource class]]) {
+            if (array.count > 0 && CDAClassIsOfType([[array firstObject] class], CDAResource.class)) {
                 NSMutableArray* newArray = [@[] mutableCopy];
                 
                 for (CDAResource* resource in array) {
@@ -203,7 +209,7 @@
             }
         }
         
-        if (field.type == CDAFieldTypeLink && [value isKindOfClass:[CDAResource class]]) {
+        if (field.type == CDAFieldTypeLink && CDAClassIsOfType([value class], CDAResource.class)) {
             CDAResource* possibleResource = resolver(value, assets, entries);
             
             fields[key] = possibleResource ?: value;
@@ -277,15 +283,25 @@
 
 -(void)setClient:(CDAClient *)client {
     [super setClient:client];
-    
+
     for (NSDictionary* fields in self.localizedFields.allValues) {
         for (id field in fields.allValues) {
-            if ([field respondsToSelector:@selector(setClient:)]) {
-                CDAResource* resource = (CDAResource*)field;
-                if (!resource.client) {
-                    resource.client = self.client;
+            if ([field isKindOfClass:NSArray.class]) {
+                for (id subField in field) {
+                    [self setClient:client forField:subField];
                 }
             }
+
+            [self setClient:client forField:field];
+        }
+    }
+}
+
+-(void)setClient:(CDAClient*)client forField:(id)field {
+    if ([field respondsToSelector:@selector(setClient:)]) {
+        CDAResource* resource = (CDAResource*)field;
+        if (!resource.client) {
+            resource.client = self.client;
         }
     }
 }

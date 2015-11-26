@@ -19,6 +19,9 @@
 #import "CDARequestOperationManager.h"
 #import "CDAResource+Private.h"
 #import "CDASyncedSpace+Private.h"
+#import "CDAUtilities.h"
+
+static NSString* const CDAAllowPreviewModeInProductionKey = @"CDAAllowPreviewModeInProduction";
 
 NSString* const CDAContentTypeHeader = @"application/vnd.contentful.delivery.v1+json";
 NSString* const CMAContentTypeHeader = @"application/vnd.contentful.management.v1+json";
@@ -40,8 +43,10 @@ NSString* const CMAContentTypeHeader = @"application/vnd.contentful.management.v
 
 // Terrible workaround to keep static builds from stripping these classes out.
 +(void)load {
+#ifndef __clang_analyzer__
     NSArray* classes = @[ [CDAContentType class] ];
     classes = nil;
+#endif
 }
 
 #pragma mark -
@@ -129,7 +134,7 @@ NSString* const CMAContentTypeHeader = @"application/vnd.contentful.management.v
                              failure:failure];
 }
 
--(CDAArray *)fetchAssetsMatching:(NSDictionary *)query synchronouslyWithError:(NSError **)error {
+-(CDAArray *)fetchAssetsMatching:(NSDictionary *)query synchronouslyWithError:(NSError * __autoreleasing *)error {
     return [self.requestOperationManager fetchArraySynchronouslyAtURLPath:@"assets"
                                                                parameters:query
                                                                     error:error];
@@ -154,14 +159,15 @@ NSString* const CMAContentTypeHeader = @"application/vnd.contentful.management.v
                                  }
                                  
                                  if (success) {
-                                     NSAssert(array.items.count == 1,
+                                     CDAAsset* asset = [array.items firstObject];
+                                     NSAssert(array.items.count == 1 && asset,
                                               @"Should have only one item.");
-                                     success(response, [array.items firstObject]);
+                                     success(response, asset);
                                  }
                              } failure:failure];
 }
 
--(CDAArray*)fetchContentTypesMatching:(NSDictionary*)query synchronouslyWithError:(NSError**)error {
+-(CDAArray*)fetchContentTypesMatching:(NSDictionary*)query synchronouslyWithError:(NSError* __autoreleasing *)error {
     return [self.requestOperationManager fetchArraySynchronouslyAtURLPath:@"content_types"
                                                                parameters:query
                                                                     error:error];
@@ -175,6 +181,17 @@ NSString* const CMAContentTypeHeader = @"application/vnd.contentful.management.v
 -(CDARequest*)fetchContentTypeWithIdentifier:(NSString *)identifier
                                      success:(CDAContentTypeFetchedBlock)success
                                      failure:(CDARequestFailureBlock)failure {
+    CDAContentType* contentType = [self.contentTypeRegistry contentTypeForIdentifier:identifier];
+
+    if (contentType && contentType.fetched && !self.configuration.usesManagementAPI) {
+        dispatch_async(self.requestOperationManager.completionQueue ?: dispatch_get_main_queue(), ^{
+            if (success) {
+                success(nil, contentType);
+            }
+        });
+        return nil;
+    }
+
     return [self fetchArrayAtURLPath:@"content_types" parameters:@{ @"sys.id": identifier }
                              success:^(CDAResponse *response, CDAArray *array) {
                                  if (array.items.count == 0) {
@@ -186,9 +203,10 @@ NSString* const CMAContentTypeHeader = @"application/vnd.contentful.management.v
                                  }
                                  
                                  if (success) {
-                                     NSAssert(array.items.count == 1,
+                                     CDAContentType* contentType = [array.items firstObject];
+                                     NSAssert(array.items.count == 1 && contentType,
                                               @"Should have only one item.");
-                                     success(response, [array.items firstObject]);
+                                     success(response, contentType);
                                  }
                              } failure:failure];
 }
@@ -199,7 +217,7 @@ NSString* const CMAContentTypeHeader = @"application/vnd.contentful.management.v
     return [self fetchArrayAtURLPath:@"entries" parameters:query success:success failure:failure];
 }
 
--(CDAArray *)fetchEntriesMatching:(NSDictionary *)query synchronouslyWithError:(NSError **)error {
+-(CDAArray *)fetchEntriesMatching:(NSDictionary *)query synchronouslyWithError:(NSError * __autoreleasing *)error {
     return [self.requestOperationManager fetchArraySynchronouslyAtURLPath:@"entries"
                                                                parameters:query
                                                                     error:error];
@@ -222,10 +240,11 @@ NSString* const CMAContentTypeHeader = @"application/vnd.contentful.management.v
                                       
                                       return;
                                   }
-                                  
-                                  NSAssert(array.items.count == 1, @"Should only have one entry.");
+
+                                  CDAEntry* entry = [array.items firstObject];
+                                  NSAssert(array.items.count == 1 && entry, @"Should only have one entry.");
                                   if (success) {
-                                      success(response, [array.items firstObject]);
+                                      success(response, entry);
                                   }
                               } failure:failure];
 }
@@ -241,11 +260,11 @@ NSString* const CMAContentTypeHeader = @"application/vnd.contentful.management.v
     
     NSMutableDictionary* query = [array.query mutableCopy];
     query[@"skip"] = @(array.skip + array.limit);
-    
-    if ([[array.items firstObject] isKindOfClass:[CDAAsset class]]) {
+
+    if (CDAClassIsOfType([[array.items firstObject] class], CDAAsset.class)) {
         return [self fetchAssetsMatching:query success:success failure:failure];
     } else {
-        NSAssert([[array.items firstObject] isKindOfClass:[CDAEntry class]],
+        NSAssert(CDAClassIsOfType([[array.items firstObject]  class], CDAEntry.class),
                  @"Array need to contain either assets or entries.");
         return [self fetchEntriesMatching:query success:success failure:failure];
     }
@@ -303,52 +322,16 @@ NSString* const CMAContentTypeHeader = @"application/vnd.contentful.management.v
 -(CDARequest *)initialSynchronizationMatching:(NSDictionary *)query
                                       success:(CDASyncedSpaceFetchedBlock)success
                                       failure:(CDARequestFailureBlock)failure {
-    if (self.configuration.previewMode) {
-        void(^handler)(NSArray* fetchedAssets, NSArray* fetchedEntries) = ^(NSArray* fetchedAssets,
-                                                                            NSArray* fetchedEntries) {
-            NSMutableDictionary* assets = [@{} mutableCopy];
-            NSMutableDictionary* entries = [@{} mutableCopy];
-            
-            for (CDAAsset* asset in fetchedAssets) {
-                assets[asset.identifier] = asset;
-            }
-            
-            for (CDAEntry* entry in fetchedEntries) {
-                entries[entry.identifier] = entry;
-            }
-            
-            for (CDAEntry* entry in entries.allValues) {
-                [entry resolveLinksWithIncludedAssets:assets entries:entries];
-            }
-            
-            CDASyncedSpace* space = [[CDASyncedSpace alloc] initWithAssets:assets.allValues
-                                                                   entries:entries.allValues];
-            
-            space.client = self;
-            success(nil, space);
-        };
-        
-        return [self fetchAssetsWithSuccess:^(CDAResponse *response, CDAArray *array) {
-            [self fetchAllItemsFromArray:array success:^(NSArray *fetchedAssets) {
-                [self fetchEntriesWithSuccess:^(CDAResponse *response, CDAArray *array) {
-                    [self fetchAllItemsFromArray:array success:^(NSArray *fetchedEntries) {
-                        handler(fetchedAssets, fetchedEntries);
-                    } failure:failure];
-                } failure:failure];
-            } failure:failure];
-        } failure:failure];
-    }
-    
     CDAArrayFetchedBlock handler = ^(CDAResponse *response, CDAArray *array) {
         NSMutableDictionary* assets = [@{} mutableCopy];
         NSMutableDictionary* entries = [@{} mutableCopy];
         
         for (CDAResource* resource in array.items) {
-            if ([resource isKindOfClass:[CDAAsset class]]) {
+            if (CDAClassIsOfType([resource class], CDAAsset.class)) {
                 assets[resource.identifier] = resource;
             }
             
-            if ([resource isKindOfClass:[CDAEntry class]]) {
+            if (CDAClassIsOfType([resource class], CDAEntry.class)) {
                 entries[resource.identifier] = resource;
             }
         }
@@ -399,7 +382,7 @@ NSString* const CMAContentTypeHeader = @"application/vnd.contentful.management.v
 -(id)initWithSpaceKey:(NSString *)spaceKey
           accessToken:(NSString *)accessToken
         configuration:(CDAConfiguration*)configuration {
-    if (!configuration.usesManagementAPI && (configuration.previewMode || !spaceKey)) {
+    if (!configuration.usesManagementAPI && !spaceKey) {
         configuration.usesManagementAPI = YES;
     }
 
@@ -408,13 +391,14 @@ NSString* const CMAContentTypeHeader = @"application/vnd.contentful.management.v
         self.accessToken = accessToken;
         self.configuration = configuration;
         self.contentTypeRegistry = [CDAContentTypeRegistry new];
-        self.deepResolving = YES;
         self.spaceKey = spaceKey;
         self.requestOperationManager = [[CDARequestOperationManager alloc] initWithSpaceKey:spaceKey accessToken:accessToken client:self configuration:configuration];
         self.resourceClassPrefix = @"CDA";
 
 #ifndef DEBUG
-        if (self.configuration.previewMode) {
+        BOOL allowPreviewMode = [[NSUserDefaults standardUserDefaults] boolForKey:CDAAllowPreviewModeInProductionKey];
+
+        if (self.configuration.previewMode && !allowPreviewMode) {
             [[NSException exceptionWithName:NSInternalInconsistencyException
                                      reason:@"You are using the preview-mode in a release-build"
                                    userInfo:@{}] raise];
@@ -492,7 +476,7 @@ NSString* const CMAContentTypeHeader = @"application/vnd.contentful.management.v
 -(void)resolveLinksFromArray:(NSArray*)array
                      success:(void (^)(NSArray* items))success
                      failure:(CDARequestFailureBlock)failure {
-    if (![[array firstObject] isKindOfClass:[CDAResource class]]) {
+    if (!CDAClassIsOfType([[array firstObject] class], CDAResource.class)) {
         if (success) {
             success(array);
         }

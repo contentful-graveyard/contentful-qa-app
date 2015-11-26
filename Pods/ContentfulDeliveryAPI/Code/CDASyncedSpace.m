@@ -7,7 +7,6 @@
 //
 
 #import <ContentfulDeliveryAPI/ContentfulDeliveryAPI.h>
-#import <HRCoder/HRCoder.h>
 
 #import "CDAArray+Private.h"
 #import "CDAClient+Private.h"
@@ -30,16 +29,15 @@
 
 @implementation CDASyncedSpace
 
-+(instancetype)readFromFile:(NSString*)filePath client:(CDAClient*)client {
-    CDASyncedSpace* item = nil;
-    
-    if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
-        NSData *data = [NSData dataWithContentsOfFile:filePath];
-        item = [HRCoder unarchiveObjectWithData:data];
++(nullable instancetype)readFromFile:(NSString*)filePath client:(CDAClient*)client {
+    if (filePath == nil) {
+        return nil;
     }
-    
-    item.client = client;
-    return item;
+    return [self readFromFileURL:[NSURL fileURLWithPath:filePath] client:client];
+}
+
++(nullable instancetype)readFromFileURL:(NSURL*)fileURL client:(CDAClient*)client {
+    return CDAReadItemFromFileURL(fileURL, client);
 }
 
 +(instancetype)shallowSyncSpaceWithToken:(NSString *)syncToken client:(CDAClient *)client {
@@ -77,11 +75,11 @@
     NSDate* nextTimestamp = self.lastSyncTimestamp;
     
     for (CDAResource* item in array.items) {
-        if ([item isKindOfClass:[CDAAsset class]]) {
+        if (CDAClassIsOfType([item class], CDAAsset.class)) {
             newAssets[item.identifier] = item;
         }
         
-        if ([item isKindOfClass:[CDAEntry class]]) {
+        if (CDAClassIsOfType([item class], CDAEntry.class)) {
             newEntries[item.identifier] = item;
         }
     }
@@ -218,14 +216,6 @@
                                  failure:(CDARequestFailureBlock)failure {
     NSParameterAssert(self.client);
     
-    if (self.client.configuration.previewMode) {
-        if (success) {
-            success();
-        }
-        
-        return;
-    }
-    
     if (!self.syncToken) {
         if (failure) {
             failure(nil, [NSError errorWithDomain:CDAErrorDomain code:901 userInfo:@{ NSLocalizedDescriptionKey: NSLocalizedString(@"No sync token available.", nil) }]);
@@ -233,8 +223,8 @@
         
         return;
     }
-    
-    [self.client fetchArrayAtURLPath:@"sync" parameters:@{ @"sync_token": self.syncToken } success:^(CDAResponse *response, CDAArray *array) {
+
+    [self.client fetchArrayAtURLPath:@"sync" parameters:@{ @"sync_token": self.syncToken ?: @"" } success:^(CDAResponse *response, CDAArray *array) {
         if (!self.syncedAssets && !self.syncedEntries) {
             [self resolveLinksInArray:array
                               success:^{
@@ -243,7 +233,13 @@
                                                                        failure:failure];
                               } failure:failure];
         } else {
-            [self handleSynchronizationResponseWithArray:array success:success failure:failure];
+            [self handleSynchronizationResponseWithArray:array success:^{
+                for (CDAEntry* entry in self.syncedEntries.allValues) {
+                    [entry resolveLinksWithIncludedAssets:self.syncedAssets entries:self.syncedEntries];
+                }
+
+                success();
+            } failure:failure];
         }
     } failure:failure];
 }
@@ -256,7 +252,7 @@
     NSMutableArray* unresolvedEntries = [@[] mutableCopy];
     
     for (CDAResource* item in array.items) {
-        if ([item isKindOfClass:[CDAEntry class]]) {
+        if (CDAClassIsOfType([item class], CDAEntry.class)) {
             CDAEntry* entry = (CDAEntry*)item;
             [entriesInQuery addObject:item];
             [unresolvedAssets addObjectsFromArray:[entry findUnresolvedAssets]];
@@ -305,27 +301,10 @@
     for (CDAAsset* asset in assets) {
         assetsMap[asset.identifier] = asset;
     }
-    
-    if (unresolvedEntryIds.count == 0) {
-        [self resolveLinksInEntries:entries withIncludedAssets:assetsMap entries:@{}];
-        
-        success();
-    } else {
-        [self.client fetchEntriesMatching:@{ @"sys.id[in]": unresolvedEntryIds,
-                                             @"limit": @(unresolvedEntryIds.count) }
-                                  success:^(CDAResponse *response, CDAArray *array) {
-                                      NSMutableDictionary* entriesMap = [@{} mutableCopy];
-                                      for (CDAEntry* entry in array.items) {
-                                          entriesMap[entry.identifier] = entry;
-                                      }
-                                      
-                                      [self resolveLinksInEntries:entries
-                                               withIncludedAssets:assetsMap
-                                                          entries:entriesMap];
-                                      
-                                      success();
-                                  } failure:failure];
-    }
+
+    [self resolveLinksInEntries:entries withIncludedAssets:assetsMap entries:@{}];
+
+    success();
 }
 
 -(void)resolveLinksInEntries:(NSArray*)entriesWithLinks
@@ -341,15 +320,7 @@
 }
 
 -(NSString*)syncTokenFromURL:(NSURL*)url {
-    for (NSString* parameters in [url.query componentsSeparatedByString:@"&"]) {
-        NSArray* query = [parameters componentsSeparatedByString:@"="];
-        
-        if ([[query firstObject] isEqualToString:@"sync_token"]) {
-            return [query lastObject];
-        }
-    }
-    
-    return nil;
+    return CDAValueForQueryParameter(url, @"sync_token");
 }
 
 -(void)updateLastSyncTimestamp {
@@ -367,7 +338,7 @@
 }
 
 -(void)writeToFile:(NSString*)filePath {
-    NSData* data = [HRCoder archivedDataWithRootObject:self];
+    NSData* data = [NSKeyedArchiver archivedDataWithRootObject:self];
     [data writeToFile:filePath atomically:YES];
 }
 

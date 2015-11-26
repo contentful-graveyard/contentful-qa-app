@@ -30,6 +30,10 @@
     return @"ContentType";
 }
 
++(Class)fieldClass {
+    return CDAField.class;
+}
+
 #pragma mark -
 
 -(NSString *)description {
@@ -44,15 +48,22 @@
 -(id)initWithDictionary:(NSDictionary *)dictionary client:(CDAClient*)client {
     self = [super initWithDictionary:dictionary client:client];
     if (self) {
+        if (dictionary[@"name"]) {
+            NSString* name = dictionary[@"name"];
+            self.name = name;
+        } else {
+            [NSException raise:NSInvalidArgumentException format:@"Content-Types need a name"];
+        }
+
         self.displayField = dictionary[@"displayField"];
-        self.name = dictionary[@"name"];
         self.userDescription = dictionary[@"description"];
         
         NSMutableDictionary* allFields = [@{} mutableCopy];
         NSMutableArray* fields = [@[] mutableCopy];
         
         for (NSDictionary* field in dictionary[@"fields"]) {
-            CDAField* fieldObject = [[CDAField alloc] initWithDictionary:field client:self.client];
+            CDAField* fieldObject = [[[self.class fieldClass] alloc] initWithDictionary:field
+                                                                                 client:self.client];
             
             allFields[fieldObject.identifier] = fieldObject;
             [fields addObject:fieldObject];

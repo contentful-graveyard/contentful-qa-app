@@ -6,11 +6,13 @@
 //
 //
 
+@import Darwin.TargetConditionals;
+
 #if TARGET_OS_IPHONE
 #import <AFNetworking/AFNetworkActivityIndicatorManager.h>
 #endif
 
-#import <objc/runtime.h>
+@import ObjectiveC.runtime;
 
 #import "CDAArray+Private.h"
 #import "CDAClient+Private.h"
@@ -22,10 +24,12 @@
 #import "CDAResponse+Private.h"
 #import "CDAResponseSerializer.h"
 #import "CDASpace.h"
+#import "CDAUtilities.h"
 
 @interface CDARequestOperationManager ()
 
 @property (nonatomic) NSDateFormatter* dateFormatter;
+@property (nonatomic) BOOL rateLimiting;
 
 @end
 
@@ -66,7 +70,7 @@
                    parameters:parameters
                       success:^(CDAResponse *response, id responseObject) {
                           if (success) {
-                              NSAssert([responseObject isKindOfClass:[CDAArray class]],
+                              NSAssert(CDAClassIsOfType([responseObject class], CDAArray.class),
                                        @"Response object needs to be an array.");
                               [(CDAArray*)responseObject setQuery:parameters ?: @{}];
                               success(response, responseObject);
@@ -76,19 +80,20 @@
 
 -(CDAArray*)fetchArraySynchronouslyAtURLPath:(NSString*)URLPath
                                   parameters:(NSDictionary*)parameters
-                                       error:(NSError **)error {
+                                       error:(NSError * __autoreleasing *)error {
     id responseObject = [self fetchURLPathSynchronously:URLPath parameters:parameters error:error];
     
     if (!responseObject) {
         return nil;
     }
 
-    if ([responseObject isKindOfClass:[CDAError class]]) {
+    if (CDAClassIsOfType([responseObject class], CDAError.class)) {
         NSAssert(false, [(CDAError*)responseObject message]);
         return nil;
     }
     
-    NSAssert([responseObject isKindOfClass:[CDAArray class]], @"Response object needs to be an array.");
+    NSAssert(CDAClassIsOfType([responseObject class], CDAArray.class),
+             @"Response object needs to be an array.");
     return (CDAArray*)responseObject;
 }
 
@@ -97,7 +102,7 @@
     return [self fetchURLPath:@""
                    parameters:nil
                       success:^(CDAResponse *response, id responseObject) {
-                          NSAssert([responseObject isKindOfClass:[CDASpace class]],
+                          NSAssert(CDAClassIsOfType([responseObject class], CDASpace.class),
                                    @"Response object needs to be a space.");
                           success(response, responseObject);
                       } failure:failure];
@@ -107,35 +112,15 @@
                 parameters:(NSDictionary*)parameters
                    success:(CDAObjectFetchedBlock)success
                    failure:(CDARequestFailureBlock)failure {
-    AFHTTPRequestOperation* operation = [self GET:URLPath parameters:parameters
-      success:^(AFHTTPRequestOperation *operation, id responseObject) {
-          if (!responseObject && operation.response.statusCode != 204) {
-              if (failure) {
-                  failure([CDAResponse responseWithHTTPURLResponse:operation.response], [NSError errorWithDomain:NSURLErrorDomain code:kCFURLErrorZeroByteResource userInfo:nil]);
-              }
-              
-              return;
-          }
-          
-          if (success) {
-              success([CDAResponse responseWithHTTPURLResponse:operation.response], responseObject);
-          }
-      } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-          if (failure) {
-              if ([operation.responseObject isKindOfClass:[CDAError class]]) {
-                  error = [operation.responseObject errorRepresentationWithCode:operation.response.statusCode];
-              }
-              
-              failure([CDAResponse responseWithHTTPURLResponse:operation.response], error);
-          }
-      }];
+    parameters = [self fixParametersInDictionary:parameters];
+    return [self requestWithMethod:@"GET" URLPath:URLPath headers:nil parameters:parameters
+                           success:success failure:failure];
 
-    return [self buildRequestResultWithOperation:operation];
 }
 
 -(id)fetchURLPathSynchronously:(NSString*)URLPath
                     parameters:(NSDictionary*)parameters
-                         error:(NSError **)error {
+                         error:(NSError * __autoreleasing *)error {
     NSURLRequest* request = [self buildRequestWithURLString:URLPath parameters:parameters];
     
     NSURLResponse* response;
@@ -167,14 +152,6 @@
     return mutableParameters.count == 0 ? nil : [mutableParameters copy];
 }
 
--(AFHTTPRequestOperation *)GET:(NSString *)URLString
-                    parameters:(NSDictionary *)parameters
-                       success:(void (^)(AFHTTPRequestOperation *, id))success
-                       failure:(void (^)(AFHTTPRequestOperation *, NSError *))failure {
-    parameters = [self fixParametersInDictionary:parameters];
-    return [super GET:URLString parameters:parameters success:success failure:failure];
-}
-
 -(id)initWithSpaceKey:(NSString *)spaceKey
           accessToken:(NSString *)accessToken
                client:(CDAClient*)client
@@ -194,6 +171,11 @@
     if (self) {
         self.requestSerializer = [[CDARequestSerializer alloc] initWithAccessToken:accessToken];
         self.responseSerializer = [[CDAResponseSerializer alloc] initWithClient:client];
+        self.rateLimiting = configuration.rateLimiting;
+
+        if (configuration.userAgent) {
+            [(CDARequestSerializer*)self.requestSerializer setUserAgent:configuration.userAgent];
+        }
         
         self.dateFormatter = [NSDateFormatter new];
         NSLocale *posixLocale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
@@ -247,6 +229,18 @@
 
     [request setValue:CMAContentTypeHeader forHTTPHeaderField:@"Content-Type"];
 
+    AFHTTPRequestOperation* operation = [self requestOperationWithRequest:request
+                                                               retryCount:0
+                                                                  success:success
+                                                                  failure:failure];
+
+    return [self buildRequestResultWithOperation:operation];
+}
+
+-(AFHTTPRequestOperation*)requestOperationWithRequest:(NSURLRequest*)request
+                                           retryCount:(NSUInteger)retryCount
+                                              success:(CDAObjectFetchedBlock)success
+                                              failure:(CDARequestFailureBlock)failure {
     AFHTTPRequestOperation* operation = [self HTTPRequestOperationWithRequest:request
       success:^(AFHTTPRequestOperation *operation, id responseObject) {
           if (!responseObject && operation.response.statusCode != 204) {
@@ -261,8 +255,22 @@
               success([CDAResponse responseWithHTTPURLResponse:operation.response], responseObject);
           }
       } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+          // Rate-Limiting
+          if (operation.response.statusCode == 429 && retryCount < 10 && self.rateLimiting) {
+              NSUInteger delayInSeconds = 2^retryCount * 100 * 1000;
+
+              dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC)),
+                             dispatch_get_main_queue(), ^{
+                                 [self requestOperationWithRequest:request
+                                                        retryCount:retryCount + 1
+                                                           success:success
+                                                           failure:failure];
+              });
+              return;
+          }
+
           if (failure) {
-              if ([operation.responseObject isKindOfClass:[CDAError class]]) {
+              if (CDAClassIsOfType([operation.responseObject class], CDAError.class)) {
                   error = [operation.responseObject errorRepresentationWithCode:operation.response.statusCode];
               }
               
@@ -271,7 +279,7 @@
       }];
     [self.operationQueue addOperation:operation];
 
-    return [self buildRequestResultWithOperation:operation];
+    return operation;
 }
 
 @end
